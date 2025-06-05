@@ -1,0 +1,552 @@
+.home-container {
+  width: 100%;
+
+  .home-banner {
+    width: 100%;
+    position: relative;
+    margin-bottom: 150px;
+
+    .banner-img {
+      width: 100%;
+
+      img {
+        width: 100%;
+        cursor: pointer;
+      }
+    }
+
+    .banner-content {
+      position: absolute;
+      left: 100px;
+      top: calc((100vw / 4.173913043478261) - 59px);
+      width: 85% !important;
+      height: 150px;
+      z-index: 100;
+      background-color: white !important;
+      border-radius: 1rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+
+      .banner-search-tab {
+        border-bottom: 1px solid #e5e5e5;
+        padding-bottom: 0 !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 30%;
+        width: 100%;
+
+        .bst-content {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+          margin-bottom: 20px;
+
+          p {
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            color: #0b5da7;
+          }
+        }
+      }
+
+      .banner-search-body {
+        width: 100%;
+        height: 70%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .bsb-container {
+          width: 90%;
+          height: 85%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .bsb-input {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1.5rem;
+            width: 90%;
+
+            .input-container {
+              width: 48%;
+              position: relative;
+              .destinations {
+                margin-top: 30px;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                z-index: 10;
+                background-color: white;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                padding: 20px 15px;
+                .destination-item {
+                  display: flex;
+                  align-items: center;
+                  margin-top: 7px;
+                  cursor: pointer;
+                  img {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 3px;
+                    overflow: hidden;
+                  }
+                  p {
+                    margin-left: 8px;
+                    font-size: 15px;
+                    color: #5d5d5d;
+                  }
+                }
+              }
+              .calendar {
+                margin-top: 40px;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                z-index: 10;
+                background-color: white;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+              }
+
+              .dropdown {
+                .dropdown-content {
+                  display: flex;
+                  flex-direction: column;
+                  position: absolute;
+                  margin-top: 40px;
+                  top: 100%;
+                  width: 100%;
+                  padding: 20px 10px;
+                  background-color: white;
+                  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+                  border-radius: 8px;
+                }
+                .drp-list {
+                  border: solid 1px #ddd;
+                  padding: 5px 10px;
+                  width: auto;
+                  margin-top: 10px;
+                  cursor: pointer;
+                  border-radius: 5px;
+                  font-size: 18px;
+                  color: #171717;
+                }
+              }
+
+              .input-content {
+                display: flex;
+                flex-direction: column;
+                position: relative;
+
+                label {
+                  display: block;
+                  margin: 0;
+                  font-size: 1.3rem;
+                  font-weight: 750;
+                  color: #171717;
+                }
+
+                .input {
+                  display: flex;
+                  justify-content: flex-start;
+                  align-items: center;
+                  flex-direction: row;
+                  gap: 0.6rem;
+                  width: 100%;
+
+                  input {
+                    padding-bottom: 0;
+                    font-weight: 500;
+                    border: none;
+                    padding: 0.4rem 1rem 1rem 0;
+                    width: 100%;
+                    outline: none;
+                  }
+                }
+              }
+            }
+
+            .hasDivider {
+              border-right: 1px solid #e5e5e5 !important;
+              height: 3rem;
+              margin: auto 0;
+            }
+          }
+
+          .bsb-icon {
+            width: 10%;
+
+            button {
+              width: 100%;
+              padding: 1.2rem;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border-radius: 0.5rem;
+              border: none;
+              background-color: #0b5da7;
+              color: #fff;
+              font-weight: 700;
+              font-size: 2.5rem;
+              transition: all 0.3s;
+              font-size: 1.6rem;
+              cursor: pointer;
+            }
+
+            button:hover {
+              background: #103658;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .select-tour {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .select-tour-container {
+      width: 85% !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      .select-tour-button {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        .stb-list {
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          align-self: stretch;
+          padding: 0.7rem 1.5rem;
+          text-align: center;
+          border-radius: 5px;
+          color: #171717;
+          font-weight: 600;
+          gap: 1rem;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          transition: all 0.3s ease-in-out;
+
+          button {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem;
+            border-radius: 1rem;
+            background-color: #daefff;
+            width: 5rem;
+            aspect-ratio: 1 / 1;
+            border: 1px solid #daefff;
+            cursor: pointer;
+
+            img {
+              width: 3.5rem;
+            }
+          }
+        }
+
+        .stb-list:hover {
+          color: #0b5da7;
+        }
+      }
+
+      .slick-slider {
+        width: 95%;
+        height: 300px;
+        margin-top: 40px;
+        margin-bottom: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .slick-slide {
+          .each-slider {
+            width: 100%;
+            object-fit: cover;
+
+            img {
+              width: 395px;
+              border-radius: 20px;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+  }
+
+    .tour-feature {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+
+        .tour-feature-container {
+            padding: 5rem 0 8rem;
+            width: 85% !important;
+
+            .tour-feature-header {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 0;
+
+                h1 {
+                    font-size: 2.2rem;
+                    font-weight: 650;
+                    color: #0b5da7;
+                    margin: 0 0 .5rem;
+                    text-transform: uppercase;
+                    line-height: 5rem;
+                }
+
+                .horizontal-divider {
+                    width: 12%;
+                    height: 3.5px;
+                    border-radius: 2.5px;
+                    background-color: #0b5da7;
+                }
+
+                h2 {
+                    width: 60%;
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                    color: #171717;
+                    line-height: 3rem;
+                    margin: 0 0 2rem;
+                    font-family: inherit !important;
+                }
+            }
+
+            .tour-feature-content {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+
+                .tour-feature-list {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0;
+                    list-style: none;
+                    width: 100%;
+
+                    li {
+                        margin-bottom: .75rem;
+                        width: 30%;
+
+                        .tour-card {
+                            width: 100%;
+                            height: 28rem;
+                            position: relative;
+                            border: 1px solid transparent;
+
+                            .background {
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0;
+                                overflow: hidden;
+                                border-radius: 1.6rem;
+                                position: relative;
+
+                                img {
+                                    width: 100%;
+                                    height: 80%;
+                                    border-radius: 2rem 2rem 0 0;
+                                    transition: transform .3s ease-in-out;
+                                    object-fit: cover;
+                                    transition: all 0.3s;
+                                    cursor: pointer;
+                                }
+
+                                img:hover {
+                                    transform: scale(1.1);
+                                }
+
+                                .tour-card-large {
+                                    width: 100%;
+                                    height: 20%;
+                                    background-color: #0b5da7;
+                                    border-radius: 0 0 2rem 2rem;
+                                    z-index: 1;
+                                }
+                            }
+
+                            .content {
+                                position: absolute;
+                                bottom: 0;
+                                left: 0;
+                                width: 100%;
+                                border-radius: 2rem;
+                                padding: 1.1rem;
+                                z-index: 2;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                justify-content: flex-end;
+
+                                .preview {
+                                    background-color: #fff !important;
+                                    border-radius: 1rem;
+                                    padding: 1.1rem;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-end;
+                                    gap: 1rem;
+                                    transition: height .4s ease-in-out;
+                                    width: 80%;
+                                    height: 50%;
+                                    position: relative;
+                                    opacity: .93;
+
+                                    .preview-content {
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: .5rem;
+
+                                        .line-clamp {
+                                            margin: 0;
+                                            font-size: 1rem;
+                                            font-weight: 650;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                            display: -webkit-box;
+                                            -webkit-line-clamp: 2;
+                                            -webkit-box-orient: vertical;
+                                        }
+
+                                        .tour-promotion {
+                                            display: flex;
+                                            flex-direction: row;
+                                            align-items: center;
+                                            justify-content: flex-start;
+                                            gap: .25rem;
+                                            font-size: 1.2rem;
+                                            font-weight: 700;
+                                            margin: 0;
+
+                                            .text {
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                flex-direction: row;
+                                                gap: .25rem;
+                                                font-weight: 700;
+
+                                                img {
+                                                    transform: scale(.9);
+                                                }
+
+                                                p {
+                                                    font-size: 0.8rem;
+                                                    font-weight: 600;
+                                                    margin: 0;
+                                                }
+                                            }
+
+                                            span {
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                font-size: 0.8rem;
+                                                flex-direction: row;
+                                                font-weight: 600;
+                                                font-style: normal;
+                                                color: #0b5da7;
+                                            }
+                                        }
+                                    }
+
+                                    .preview-pric {
+                                        display: flex;
+                                        flex-direction: row;
+                                        justify-content: space-between;
+                                        align-items: flex-end;
+                                        background-color: #fff;
+
+                                        .price {
+                                            display: flex;
+                                            flex-direction: column;
+                                            width: 60%;
+
+                                            .price-oldPrice {
+                                                display: flex;
+                                                flex-direction: row;
+                                                align-items: center;
+                                                justify-content: flex-start;
+                                                gap: .5rem;
+
+                                                p {
+                                                    margin: 0;
+                                                    font-weight: 650;
+                                                    font-size: 1rem;
+                                                }
+                                            }
+
+                                            .price-newPrice {
+                                                display: flex;
+                                                flex-direction: row;
+                                                align-items: center;
+                                                justify-content: flex-start;
+
+                                                span {
+                                                    margin: 0;
+                                                    color: #e01600;
+                                                    font-weight: 650;
+                                                    font-size: 1.1rem;
+                                                }
+                                            }
+                                        }
+
+                                        .button {
+                                            width: 35%;
+                                            display: flex;
+                                            align-items: flex-end;
+
+                                            button {
+                                                background-color: transparent;
+                                                border: none;
+                                                cursor: pointer;
+                                                display: flex;
+                                                flex-direction: row;
+                                                justify-content: space-evenly;
+                                                align-items: center;
+                                                font-size: 0.9rem;
+                                                font-weight: 700;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

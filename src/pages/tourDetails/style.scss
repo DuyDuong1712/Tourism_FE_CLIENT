@@ -1,0 +1,426 @@
+.tour-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    width: 100%;
+
+    .tour-details-main {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        .tour-details-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+            width: 100%;
+
+            .tour-details-header {
+                margin: auto;
+                padding: 0 1rem;
+                width: 85% !important;
+
+                .tour-header-content {
+                    margin-bottom: 1.3rem;
+
+
+                    .breadcrumb-container {
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                        width: 100%;
+
+                        .p1 {
+                            font-size: 1.2rem;
+                            font-weight: 600;
+                            color: #171717;
+                        }
+
+                        .p2 {
+                            color: #0b5da7;
+                            pointer-events: none;
+                            font-size: 1.2rem;
+                            text-decoration: none;
+                            font-weight: 650;
+                        }
+                    }
+
+                    h2 {
+                        font-size: 2.2rem;
+                        margin-bottom: 1.2rem;
+                        line-height: 4rem;
+                    }
+                }
+            }
+
+            .tour-detail-content-container {
+                width: 85% !important;
+
+                .tour-detail-content {
+                    display: flex;
+                    gap: 3rem;
+
+                    .tour-detail-content-left {
+                        width: 70%;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4rem;
+
+                        .image-gallery {
+                            width: 100%;
+                            max-height: 21rem;
+
+                            .image-gallery-wrapper {
+                                display: grid;
+                                grid-template-columns: repeat(5, 1fr);
+                                grid-auto-rows: minmax(0, 52rem);
+                                grid-gap: 10px;
+                                height: 100%;
+
+                                .image-thumbnails {
+                                    grid-column: span 1;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-start;
+                                    align-items: flex-start;
+                                    gap: .5rem;
+
+                                    .thumnails-animate {
+                                        position: relative;
+                                        height: 50%;
+                                        width: 100%;
+                                        cursor: pointer;
+
+                                        img {
+                                            object-fit: cover;
+                                            transition: brightness .3s ease;
+                                            // width: 260px;
+                                            width: 100%;
+                                            height: 100%;
+                                            border-radius: 20px;
+
+                                        }
+                                    }
+                                }
+
+                                .image-main {
+                                    grid-column: span 4;
+                                    width: 100%;
+                                    height: 100%;
+                                    cursor: pointer;
+
+                                    img {
+                                        object-fit: cover;
+                                        border-radius: 20px;
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                }
+                            }
+                        }
+
+                        .tour-calendar {
+                            .section-detail {
+                                h3 {
+                                    font-size: 1.8rem;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+                                
+
+                            }
+                        }
+
+                        .overview {
+                            .section-detail {
+                                width: 100%;
+
+                                .title {
+                                    font-size: 1.8rem;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+
+                                .overview-content {
+                                    display: grid;
+                                    grid-template-columns: repeat(3, 1fr);
+                                    gap: 1.25rem;
+
+                                    .overview-content-item {
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: .8rem;
+                                        margin-bottom: 1rem;
+
+                                        img {
+                                            width: 50px;
+                                        }
+
+                                        h3 {
+                                            font-size: 1.3rem;
+                                            font-weight: 700;
+                                            line-height: 1.2;
+                                            margin-top: .5rem;
+                                        }
+
+                                        p {
+                                            margin: 0;
+                                            font-size: 1.2rem;
+                                            font-weight: 500;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        .schedule {
+                            margin-bottom: 50px;
+
+                            .section-detail {
+                                .title {
+                                    font-size: 1.8rem;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+
+                                .collapse {
+                                    .panel {}
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                .tour-detail-content-right {
+                    flex-basis: 30%;
+
+                    .tour-detail-booking {
+                        position: sticky;
+                        top: 10rem;
+
+                        .border-shadow {
+                            border-radius: 1rem;
+                            box-shadow: 0 0 10px 0 hsla(0, 0%, 9%, .12);
+                            padding: 1.5rem;
+
+                            .tour-price {
+                                margin-bottom: 1rem;
+
+                                .price-oldPrice {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    flex-direction: row;
+                                    align-items: center;
+
+                                    h4 {
+                                        font-size: 1.4rem;
+                                        font-weight: 700;
+                                        color: #000 !important;
+                                    }
+
+                                    .price-discount {
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        gap: 1rem;
+
+                                        p {
+                                            color: gray;
+
+                                            span {
+                                                text-decoration: line-through;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                .price {
+                                    color: #e01600;
+                                    font-size: 1.7rem;
+                                    font-weight: 600;
+
+                                    span {
+                                        font-size: 1.4rem;
+                                        font-weight: 600;
+                                        color: #171717;
+                                    }
+                                }
+                            }
+
+                            .tour-price-info {
+                                .tour-price-info-content {
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: .5rem;
+                                    margin: 1rem 0 2rem;
+
+                                    .item {
+                                        gap: 1rem;
+                                        display: flex;
+                                        flex-direction: row;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        font-size: 1rem;
+                                        font-weight: 700;
+
+                                        .label {
+                                            display: flex;
+                                            flex-direction: row;
+                                            justify-content: center;
+                                            align-items: center;
+                                            gap: .5rem;
+
+                                            p {
+                                                margin: 5px 0;
+                                                font-size: 1.2rem;
+
+                                                span {
+                                                    font-weight: 700;
+                                                    color: #0b5da7;
+                                                    font-size: 1.2rem;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            .book-tour-option {
+                                display: flex;
+                                flex-direction: row;
+                                justify-content: center;
+                                align-items: center;
+                                gap: 1rem;
+
+                                .btn-advise {
+                                    width: 100%;
+                                    text-transform: none;
+                                    padding: 1rem 0;
+                                    cursor: pointer;
+                                    border-radius: .5rem;
+                                    flex: 1 1;
+                                    background-color: #fff;
+                                    color: #e01600;
+                                    border: 1px solid #e01600 !important;
+                                    font-weight: bold;
+                                }
+
+                                .btn-bookTour {
+                                    width: 100%;
+                                    background: #e01600;
+                                    color: #fff;
+                                    text-transform: none;
+                                    padding: 1rem 0;
+                                    border: none;
+                                    cursor: pointer;
+                                    border-radius: .5rem;
+                                    flex: 2 1;
+                                    font-weight: bold;
+                                }
+
+                                .btn-bookTour:hover {
+                                    background: #831104;
+                                }
+                            }
+                        }
+
+                        .tour-contact {
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: flex-end;
+                            align-items: flex-end;
+                            margin-top: 1.5rem;
+                            width: 100%;
+
+                            .tour-contact-group {
+                                max-width: 100%;
+                                display: flex;
+                                gap: .5rem;
+                                font-size: 1.2rem;
+                                font-weight: 700;
+                                font-style: italic;
+
+                                .btn-phone {
+                                    background: #0b5da7;
+                                    color: #fff;
+                                    border: none;
+                                    display: flex;
+                                    flex-direction: row;
+                                    justify-content: center;
+                                    align-items: center;
+                                    padding: .8rem;
+                                    cursor: pointer;
+                                    border-radius: .5rem;
+                                    text-decoration: none;
+                                    font-style: normal;
+
+                                    p {
+                                        flex: 1.3 1;
+                                        margin: 0;
+                                        font-weight: 700;
+                                        font-size: 0.8rem;
+                                    }
+                                }
+
+                                .btn-phone:hover {
+                                    background: #0d70c6;
+                                }
+
+                                .btn-mail {
+                                    background: #fff;
+                                    color: #0b5da7;
+                                    border: 1px solid #0b5da7;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    padding: .8rem;
+                                    cursor: pointer;
+                                    border-radius: .5rem;
+                                    gap: .25rem;
+
+                                    p {
+                                        flex: 1.3 1;
+                                        margin: 0;
+                                        font-weight: 700;
+                                        font-size: 0.8rem;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+
+        .note-container {
+            position: relative;
+            z-index: 220;
+        }
+    }
+}

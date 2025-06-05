@@ -1,0 +1,38 @@
+.image-slider {
+    width: 650px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+
+    .image-slider-close {
+        height: 10%;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+
+        i {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+    }
+
+    .image-slider-body {
+        width: 100%;
+        height: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .image {
+            width: 90%;
+
+            .img {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+    }
+}

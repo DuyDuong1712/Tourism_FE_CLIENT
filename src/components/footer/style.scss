@@ -1,0 +1,111 @@
+.footer {
+    width: 100%;
+    height: 750px;
+    background: #daefff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .footer-container {
+        width: 85%;
+        height: 90%;
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+
+            .footer-colum {
+                width: 25%;
+
+                h2 {
+                    font-size: 20px;
+                    margin-bottom: 17px;
+                }
+
+                .footer-option {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    align-items: flex-start;
+
+                    .tour-item {
+                        margin-bottom: 18px;
+
+                        a {
+                            font-size: 17px;
+                            text-decoration: none;
+                            color: black;
+                        }
+                    }
+                }
+            }
+
+            .footer-booking {
+                width: 50%;
+
+                h2 {
+                    font-size: 20px;
+                    margin-bottom: 17px;
+                }
+
+                .footer-input {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 17px;
+
+                    input {
+                        width: 80%;
+                        height: 40px;
+                        border: 1px solid transparent;
+                        border-radius: 10px;
+                        color: gray;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+
+                    button {
+                        width: 90px;
+                        height: 40px;
+                        background: transparent !important;
+                        border: 1px solid #0b5da7;
+                        border-radius: 10px;
+                        color: #0b5da7;
+                        font-weight: 600;
+                        cursor: pointer;
+                    }
+
+                    button:hover {
+                        background: #0b5da7 !important;
+                        color: white;
+                    }
+                }
+
+                .footer-booking-content {
+                    width: 100%;
+                    display: flex;
+                    justify-content: space-between;
+
+                    .footer-booking-colum {
+                        h2 {
+                            font-size: 20px;
+                            margin-bottom: 17px;
+                            margin-bottom: 17px;
+                        }
+
+                        .footer-booking-option {
+                            .booking-item {
+                                margin-bottom: 18px;
+
+                                a {
+                                    font-size: 17px;
+                                    text-decoration: none;
+                                    color: black;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
