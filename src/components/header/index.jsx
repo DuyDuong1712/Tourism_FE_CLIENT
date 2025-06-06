@@ -7,7 +7,7 @@ import { get } from "../../utils/axios-http/axios-http";
 
 // Hàm tạo slug từ name
 const generateSlug = (name) => {
-  if (!name) return "";
+  if (!name) return "du-lich";
   return name
     .toLowerCase()
     .normalize("NFD")
@@ -198,7 +198,7 @@ function Header() {
                   handleOpenDestMenu();
                 }}
               >
-                Điểm đến
+                ĐIỂM ĐẾN
               </a>
               {showDestMenu && (
                 <div className="destination-overlay" ref={menuRef}>
@@ -217,13 +217,21 @@ function Header() {
               )}
             </li>
             <li>
-              <a href="https://vietravelmice.com/">Vietravel Mice</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/tours/du-lich");
+                }}
+              >
+                TOUR
+              </a>
             </li>
             <li>
-              <a href="https://vietravelplus.com/">Vietravel Loyalty</a>
+              <a href="https://vietravelplus.com/">VỀ CHÚNG TÔI</a>
             </li>
             <li>
-              <a href="https://travel.com.vn/lien-he.aspx">Liên hệ</a>
+              <a href="https://travel.com.vn/lien-he.aspx">LIÊN HỆ</a>
             </li>
             <li>
               <i

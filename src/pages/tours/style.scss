@@ -189,7 +189,7 @@
               margin-bottom: 0.4rem;
 
               p {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
                 font-weight: 600;
                 font-family: inherit !important;
               }
@@ -203,10 +203,10 @@
               .button {
                 width: 100%;
                 display: flex;
-                height: 10px;
+                height: 40px;
                 background-color: #fff;
                 padding: 0.7rem 1.25rem;
-                font-size: 1rem;
+                font-size: 1.5rem;
                 font-weight: 700;
                 border: 1px solid #e5e5e5;
                 border-radius: 0.3rem;
@@ -215,6 +215,17 @@
                 cursor: pointer;
                 outline: none;
                 font-family: inherit !important;
+
+                /* Bỏ viền dưới hoặc đường phân cách mặc định */
+                .ant-select-selector {
+                  border: none !important; /* Bỏ viền gây ra đường ngang */
+                  box-shadow: none !important; /* Bỏ bóng có thể tạo cảm giác như đường ngang */
+                }
+
+                /* Đảm bảo không có phần tử giả nào tạo đường ngang */
+                .ant-select-selector::after {
+                  display: none !important;
+                }
               }
             }
           }

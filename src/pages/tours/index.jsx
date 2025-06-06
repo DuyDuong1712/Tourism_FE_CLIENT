@@ -15,6 +15,7 @@ import { get } from "../../utils/axios-http/axios-http";
 import { message, Select, Calendar, theme } from "antd";
 import getChildren from "../../utils/getChildrenDestination";
 import moment from "moment";
+import { i } from "framer-motion/client";
 
 const { Option } = Select;
 function Tour() {
@@ -31,19 +32,43 @@ function Tour() {
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTransportation, setSelectedTransportation] = useState(null);
+  const [selectedDeparture, setSelectedDeparture] = useState(null);
   const location = useLocation();
+
+  // Hàm xây dựng cây từ danh sách phẳng
+  const buildTree = (items) => {
+    const map = {};
+    const tree = [];
+
+    items.forEach((item) => {
+      map[item.id] = { ...item, children: [] };
+    });
+
+    items.forEach((item) => {
+      if (item.parentId && map[item.parentId]) {
+        map[item.parentId].children.push(map[item.id]);
+      } else {
+        tree.push(map[item.id]);
+      }
+    });
+
+    return tree;
+  };
 
   const fetchData = async () => {
     try {
       // setLoading(true);
       const query = Object.fromEntries(searchParams.entries());
-      if (slug == "du-lich") {
+      if (slug === "du-lich") {
         const response = await get(`tours`, query);
-        setTours(response || []);
+        setTours(response.data || []);
+        console.log(response.data);
       } else {
         const response = await get(`tours/${slug}`, query);
-        setTours(response || []);
+        setTours(response.data || []);
+        console.log(`Dữ liệu tours cho ${slug}:`, response.data);
       }
+
       const [
         departuresData,
         destinationsData,
@@ -51,17 +76,28 @@ function Tour() {
         categoriesData,
       ] = await Promise.all([
         get("departures"),
-        get("destination/get-tree"),
+        get("destinations"),
         get("transportations"),
         get("categories"),
       ]);
 
-      const destinationChildrens = getChildren(destinationsData);
+      const destinationChildrens = getChildren(
+        buildTree(destinationsData.data)
+      );
 
-      setDepartures(departuresData || []);
+      // // console.log("destinationChildrens", destinationChildrens);
+
+      // // console.log("response.data", tours);
+      // // console.log("departuresData.data", departuresData.data);
+      // // console.log("destinationsData.data", destinationsData.data);
+      // console.log("transportationsData.data", transportationsData.data);
+      // // console.log("categoriesData.data", categoriesData.data);
+      // // console.log("destinationChildrens", destinationChildrens);
+
+      setDepartures(departuresData.data || []);
       setDestinations(destinationChildrens || []);
-      setTransportations(transportationsData || []);
-      setCategories(categoriesData || []);
+      setTransportations(transportationsData.data || []);
+      setCategories(categoriesData.data || []);
     } catch (error) {
       message.error("Lỗi khi tải dữ liệu tour!");
     } finally {
@@ -73,14 +109,16 @@ function Tour() {
     fetchData();
     const params = new URLSearchParams(location.search);
     const budgetId = params.get("budgetId");
-    const tourLine = params.get("tourLine");
+    const categoryId = params.get("categoryId");
     const transTypeId = params.get("transTypeId");
-    const departureFrom = params.get("departureFrom");
+    const departureId = params.get("departureId");
     setSelectedBudget(budgetId);
-    setSelectedCategory(tourLine);
+    setSelectedCategory(categoryId);
     setSelectedTransportation(transTypeId);
+    setSelectedDeparture(departureId);
   }, [slug, searchParams]);
 
+  //Theme and Date Formatting
   const { token } = theme.useToken();
   const wrapperStyle = {
     width: 400,
@@ -97,6 +135,7 @@ function Tour() {
     });
     return dateFormat;
   };
+  //Đặt ngày mặc định là ngày mai khi component mount.
   useEffect(() => {
     const now = new Date();
     now.setDate(now.getDate() + 1);
@@ -109,20 +148,31 @@ function Tour() {
     setShowCalendar((prev) => !prev);
   }, []);
 
+  //Xử lý khi người dùng chọn ngày trên lịch.
   const handleChangeCalendar = (value) => {
     setShowCalendar(false);
     const date = formatDate(new Date(value));
     const formattedDate = date.split(", ")[1].split("/").reverse().join("-");
+    //Cập nhật query parameter fromDate trong URL bằng setSearchParams.
     setSearchParams((prev) => ({
       ...prev,
       fromDate: formattedDate,
     }));
+    //Lưu ngày đã định dạng vào calendarSearch.
     setCalendarSearch(date);
   };
+
+  // Hàm cập nhật một query parameter trong URL.
   const handleAddSearchParam = (key, value) => {
     setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
-      params.set(key, value);
+
+      if (value === "") {
+        params.delete(key); // Xóa khỏi URL nếu là "Tất cả"
+      } else {
+        params.set(key, value); // Thêm nếu có giá trị
+      }
+
       return params;
     });
   };
@@ -139,18 +189,23 @@ function Tour() {
             >
               Điểm đến /
             </p>
-            <p className="active-link">{slug}</p>
+            <p className="active-link">
+              {slug === "du-lich" ? "Tất cả" : slug}
+            </p>
           </div>
           <div className="title">
-            <h1>{slug}</h1>
+            <h1>{slug === "du-lich" ? "DU LỊCH" : `DU LỊCH ${slug}`}</h1>
           </div>
         </div>
       </div>
+
+      {/* Content */}
       <div className="find-tour-content">
         <div className="find-tour-content-container">
           <div className="find-tour-content-filter">
             <p className="filter-sidebar-header">Bộ lọc tìm kiếm</p>
             <div className="filter-section">
+              {/* Ngân sách */}
               <div className="filter-range">
                 <div className="title">
                   <p>Ngân sách:</p>
@@ -202,6 +257,7 @@ function Tour() {
                   </div>
                 </div>
               </div>
+              {/* Điểm khởi hành */}
               <div className="filter-option">
                 <div className="title">
                   <p>Điểm khởi hành</p>
@@ -212,18 +268,19 @@ function Tour() {
                     // style={{ width: 200, marginRight: 10 }}
                     placeholder="Chọn điểm khởi hành"
                     onChange={(value) => {
-                      handleAddSearchParam("departureFrom", value);
+                      handleAddSearchParam("departureId", value);
                     }}
                   >
                     <Option value="">Tất cả</Option>
                     {departures.map((departure) => (
                       <Option key={departure.id} value={departure.id}>
-                        {departure.title}
+                        {departure.name}
                       </Option>
                     ))}
                   </Select>
                 </div>
               </div>
+              {/* Điểm đến */}
               <div className="filter-option">
                 <div className="title">
                   <p>Điểm đến</p>
@@ -232,20 +289,28 @@ function Tour() {
                   <Select
                     className="button"
                     // style={{ width: 200, marginRight: 10 }}
-                    placeholder="Chọn điểm khởi hành"
+                    placeholder="Chọn điểm đến"
                     onChange={(value) => {
-                      navigate(`/tours/${value}`);
+                      // Chuẩn hóa slug: thay dấu chấm bằng khoảng trắng và encode
+                      // const slugified = slugify(value); // Thay dấu chấm bằng khoảng trắng
+                      if (value === "du-lich") {
+                        navigate(`/tours/du-lich`);
+                      } else {
+                        const encodedValue = encodeURIComponent(value);
+                        navigate(`/tours/${encodedValue}`);
+                      }
                     }}
                   >
                     <Option value="du-lich">Tất cả</Option>
                     {destinations.map((destination) => (
-                      <Option key={destination.id} value={destination.slug}>
-                        {destination.title}
+                      <Option key={destination.id} value={destination.name}>
+                        {destination.name}
                       </Option>
                     ))}
                   </Select>
                 </div>
               </div>
+              {/* Ngày đi */}
               <div className="filter-calendar">
                 <div className="title">
                   <p>Ngày đi</p>
@@ -267,9 +332,11 @@ function Tour() {
                   )}
                 </div>
               </div>
+
+              {/* Dòng tour */}
               <div className="filter-options">
                 <div className="title">
-                  <p>Dòng tour</p>
+                  <p>Danh mục tour</p>
                 </div>
                 <div className="select-container">
                   {categories &&
@@ -280,15 +347,17 @@ function Tour() {
                         }
                         key={item.id}
                         onClick={() => {
-                          navigate(`/tours/du-lich?tourLine=${item.id}`);
+                          handleAddSearchParam("categoryId", item.id);
                           setSelectedCategory(item.id);
                         }}
                       >
-                        {item.title}
+                        {item.name}
                       </button>
                     ))}
                 </div>
               </div>
+
+              {/* Phương tiện */}
               <div className="filter-options">
                 <div className="title">
                   <p>Phương tiện</p>
@@ -306,11 +375,12 @@ function Tour() {
                           setSelectedTransportation(item.id);
                         }}
                       >
-                        {item.title}
+                        {item.name}
                       </button>
                     ))}
                 </div>
               </div>
+              {/* Xóa bộ lọc */}
               <button
                 className="filter-btn"
                 onClick={() => {
@@ -318,6 +388,7 @@ function Tour() {
                   setSelectedBudget(null);
                   setSelectedCategory(null);
                   setSelectedTransportation(null);
+                  setSelectedDeparture(null);
                 }}
               >
                 Xóa
@@ -348,15 +419,16 @@ function Tour() {
                 </div>
               </div>
             </div>
+
             <div className="find-tour-content-list-main">
               {tours.map((item, key) => (
                 <div
                   key={key}
                   className="card-filter-desktop"
-                  onClick={() => navigate(`/tour-details/${item.slug}`)}
+                  onClick={() => navigate(`/tour-details/${item.title}`)}
                 >
                   <div className="card-filter-thumbnail">
-                    <img src={item.image} alt="" />
+                    <img src={item.tourImages} alt="" />
                     <div className="card-category">
                       <span>{item.category}</span>
                     </div>
@@ -372,9 +444,9 @@ function Tour() {
                             <div className="info-tour-code-content">
                               <div className="code-left">
                                 <img src={Code} alt="" />
-                                <label htmlFor="">Mã tour:</label>
+                                <label htmlFor="">Danh mục tour:</label>
                               </div>
-                              <p>{item.code}</p>
+                              <p>{item.category}</p>
                             </div>
                             <div className="info-tour-code-content">
                               <div className="code-left">
@@ -390,7 +462,9 @@ function Tour() {
                                 <img src={Time} alt="" />
                                 <label htmlFor="">Thời gian: </label>
                               </div>
-                              <p>5N4Đ</p>
+                              <p>
+                                {item.duration}N{item.duration - 1}D
+                              </p>
                             </div>
                             <div className="info-tour-code-content">
                               <div className="code-left">
@@ -417,7 +491,7 @@ function Tour() {
                       </div>
                       <div
                         className="price-btn"
-                        onClick={() => navigate(`/tour-details/${item.slug}`)}
+                        onClick={() => navigate(`/tour-details/${item.title}`)}
                       >
                         <button>Xem chi tiết</button>
                       </div>

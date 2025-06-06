@@ -51,9 +51,9 @@ function App() {
           element: <TourDetails />,
         },
         {
-          path: '/order',
-          element: <Order />
-        }
+          path: "/order",
+          element: <Order />,
+        },
       ],
     },
   ]);
