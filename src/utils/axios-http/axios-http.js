@@ -2,8 +2,7 @@
 import axios from 'axios';
 
 
-const baseURL =
-    import.meta.env.VITE_APP_URL_BE;
+const baseURL = "http://localhost:8080/travel/api";
 
 
 const createAxiosInstance = (baseURL, headers = {}) => {
