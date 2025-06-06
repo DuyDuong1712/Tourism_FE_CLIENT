@@ -1,111 +1,112 @@
 .footer {
-    width: 100%;
-    height: 750px;
-    background: #daefff;
+  background-color: #e6f0fa;
+  font-family: Arial, sans-serif;
+  color: #333;
+
+  &__container {
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); // Chia thành 4 cột đều nhau
+    gap: 40px; // Khoảng cách giữa các cột
+    padding: 50px 80px;
+  }
+
+  &__left,
+  &__center,
+  &__right {
+    // Không cần flex nữa vì đã dùng grid
+  }
+
+  h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  p,
+  a {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #333;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  &__info {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-    .footer-container {
-        width: 85%;
-        height: 90%;
+  &__social {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
 
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-
-            .footer-colum {
-                width: 25%;
-
-                h2 {
-                    font-size: 20px;
-                    margin-bottom: 17px;
-                }
-
-                .footer-option {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    align-items: flex-start;
-
-                    .tour-item {
-                        margin-bottom: 18px;
-
-                        a {
-                            font-size: 17px;
-                            text-decoration: none;
-                            color: black;
-                        }
-                    }
-                }
-            }
-
-            .footer-booking {
-                width: 50%;
-
-                h2 {
-                    font-size: 20px;
-                    margin-bottom: 17px;
-                }
-
-                .footer-input {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 17px;
-
-                    input {
-                        width: 80%;
-                        height: 40px;
-                        border: 1px solid transparent;
-                        border-radius: 10px;
-                        color: gray;
-                        font-size: 10px;
-                        font-weight: 600;
-                    }
-
-                    button {
-                        width: 90px;
-                        height: 40px;
-                        background: transparent !important;
-                        border: 1px solid #0b5da7;
-                        border-radius: 10px;
-                        color: #0b5da7;
-                        font-weight: 600;
-                        cursor: pointer;
-                    }
-
-                    button:hover {
-                        background: #0b5da7 !important;
-                        color: white;
-                    }
-                }
-
-                .footer-booking-content {
-                    width: 100%;
-                    display: flex;
-                    justify-content: space-between;
-
-                    .footer-booking-colum {
-                        h2 {
-                            font-size: 20px;
-                            margin-bottom: 17px;
-                            margin-bottom: 17px;
-                        }
-
-                        .footer-booking-option {
-                            .booking-item {
-                                margin-bottom: 18px;
-
-                                a {
-                                    font-size: 17px;
-                                    text-decoration: none;
-                                    color: black;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    img {
+      width: 24px;
+      height: 24px;
     }
+  }
+
+  &__hotline {
+    margin: 10px 0;
+
+    a {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #ff0000;
+      color: #fff;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  }
+
+  &__hours {
+    font-size: 12px;
+    color: #666;
+  }
+
+  &__center {
+    display: flex;
+    flex-direction: column;
+
+    a {
+      margin-bottom: 5px;
+    }
+
+    a:last-child {
+      color: #007bff;
+      text-decoration: underline;
+    }
+  }
+
+  &__certification {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+
+    img {
+      max-width: 200px;
+      height: auto; // giữ tỷ lệ gốc, không bị méo
+      object-fit: contain; // đảm bảo hình hiển thị đầy đủ
+    }
+  }
+
+  &__payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cột */
+    gap: 10px;
+
+    img {
+      height: 30px;
+    }
+  }
 }

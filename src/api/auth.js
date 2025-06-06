@@ -20,10 +20,11 @@ export const login = async (data) => {
                 'Content-Type': 'application/json',
                 'accept': 'application/json',
                 // Nếu có token hoặc thông tin người dùng đã đăng nhập trước, bạn có thể thêm Authorization ở đây
-                'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                // 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
             }
         })
-        const token = response.data.result.accessToken;
+        const token = response.data.data.token;
+        console.log(token);
 
         if (token) {
             localStorage.setItem("accessToken", token);
@@ -38,18 +39,18 @@ export const login = async (data) => {
 export const register = async (data) => {
     try {
         const {
-            fullName,
+            fullname,
+            username,
             email,
             password,
-            address,
-            phoneNumber
+            phone
         } = data;
         const response = await axios.post(`${baseUrl}/register`, {
-            fullName,
+            fullname,
+            username,
             email,
             password,
-            address,
-            phoneNumber
+            phone
         })
         return response.data;
     } catch (error) {
@@ -60,8 +61,15 @@ export const register = async (data) => {
 
 export const logout = async () => {
     try {
-        // Gửi yêu cầu GET tới API logout
-        await axios.get(`${baseUrl}/logout`);
+        const token = localStorage.getItem('accessToken'); // Lấy refreshToken nếu có
+
+        await axios.post(`${baseUrl}/logout`, {
+            token: token
+        }, {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('accessToken') // Có thể cần hoặc không
+            }
+        });
 
         // Xóa token khỏi localStorage
         localStorage.removeItem("accessToken");

@@ -7,6 +7,8 @@ import Logo from "../../assets/images/vtv-logo.png";
 import { login } from "../../api/auth";
 import { getUser } from "../../utils/axios-http/axios-http";
 import { loginReducer } from "../../slice/authSlice";
+import { GoogleLogin } from "@react-oauth/google";
+// import jwt_decode from "jwt-decode"; // Để giải mã token
 
 function Login() {
   const [form] = Form.useForm();
@@ -42,10 +44,10 @@ function Login() {
           <h1>Đăng nhập</h1>
           <div className="input-form">
             <p>
-              Số điện thoại hoặc email <span>*</span>
+              username <span>*</span>
             </p>
             <Form.Item
-              name="email"
+              name="username"
               rules={[
                 {
                   required: true,
@@ -88,6 +90,33 @@ function Login() {
               Đăng nhập
             </Button>
           </Form.Item>
+
+          {/* Nút đăng nhập bằng Google */}
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                try {
+                  const decoded = jwt_decode(
+                    credentialResponse.credential || ""
+                  );
+                  console.log("Google user:", decoded);
+
+                  // Nếu muốn gọi API để login bằng email Google:
+                  // const response = await loginWithGoogle(decoded.email);
+                  // dispatch(loginReducer(response.user));
+                  // navigate("/");
+
+                  message.success("Đăng nhập bằng Google thành công!");
+                } catch (err) {
+                  console.error(err);
+                  message.error("Đăng nhập Google thất bại!");
+                }
+              }}
+              onError={() => {
+                message.error("Đăng nhập Google thất bại!");
+              }}
+            />
+          </div>
         </Form>
       </div>
     </div>
