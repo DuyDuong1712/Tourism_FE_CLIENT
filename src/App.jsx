@@ -47,7 +47,7 @@ function App() {
           element: <DeleteUser />,
         },
         {
-          path: "/tour-details/:slug",
+          path: "/tour-details/:id/:title",
           element: <TourDetails />,
         },
         {

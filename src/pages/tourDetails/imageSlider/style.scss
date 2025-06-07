@@ -1,38 +1,75 @@
 .image-slider {
-    width: 650px;
-    height: 600px;
-    background: white;
-    border-radius: 20px;
+  width: 1200px;
+  height: 1000px;
+  background: white;
+  border-radius: 20px;
+  position: relative; /* Đảm bảo các phần tử con định vị tuyệt đối hoạt động */
+  overflow: hidden; /* Ngăn các phần tử tràn ra ngoài */
 
-    .image-slider-close {
-        height: 10%;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: center;
+  .image-slider-close {
+    height: 10%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
 
-        i {
-            margin-right: 20px;
-            cursor: pointer;
-        }
+    i {
+      margin-right: 20px;
+      cursor: pointer;
+      font-size: 24px; /* Đảm bảo kích thước nút đóng rõ ràng */
+      color: #000;
     }
+  }
 
-    .image-slider-body {
+  .image-slider-body {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .image {
+      width: 90%;
+      height: 100%; /* Đảm bảo .image chiếm toàn bộ chiều cao của .image-slider-body */
+
+      .img {
         width: 100%;
-        height: 90%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        .image {
-            width: 90%;
-
-            .img {
-                width: 100%;
-                height: 100%;
-            }
-        }
-
+        height: 100%;
+        object-fit: contain; /* Giữ tỷ lệ hình ảnh, tránh bị bóp méo */
+      }
     }
+  }
+
+  /* Tùy chỉnh nút mũi tên của Carousel */
+  .ant-carousel .slick-prev,
+  .ant-carousel .slick-next {
+    font-size: 24px;
+    color: #000; /* Màu mặc định */
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.8); /* Nền mờ */
+    border-radius: 50%; /* Hình tròn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001; /* Đảm bảo hiển thị trên hình ảnh */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+  }
+
+  .ant-carousel .slick-prev {
+    left: 20px; /* Vị trí nút trước */
+  }
+
+  .ant-carousel .slick-next {
+    right: 20px; /* Vị trí nút sau */
+  }
+
+  .ant-carousel .slick-prev:hover,
+  .ant-carousel .slick-next:hover {
+    background: rgba(255, 255, 255, 1); /* Nền sáng khi hover */
+    color: #1890ff; /* Màu khi hover */
+  }
 }

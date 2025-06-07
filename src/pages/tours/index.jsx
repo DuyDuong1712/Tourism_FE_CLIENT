@@ -425,7 +425,9 @@ function Tour() {
                 <div
                   key={key}
                   className="card-filter-desktop"
-                  onClick={() => navigate(`/tour-details/${item.title}`)}
+                  onClick={() =>
+                    navigate(`/tour-details/${item.id}/${item.title}`)
+                  }
                 >
                   <div className="card-filter-thumbnail">
                     <img src={item.tourImages} alt="" />
@@ -491,7 +493,9 @@ function Tour() {
                       </div>
                       <div
                         className="price-btn"
-                        onClick={() => navigate(`/tour-details/${item.title}`)}
+                        onClick={() =>
+                          navigate(`/tour-details/${item.id}/${item.title}`)
+                        }
                       >
                         <button>Xem chi tiết</button>
                       </div>
