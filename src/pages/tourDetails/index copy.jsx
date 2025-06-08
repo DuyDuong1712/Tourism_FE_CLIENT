@@ -21,21 +21,21 @@ import moment from "moment";
 
 const { Panel } = Collapse;
 
-function TourDetails() {
+function TourDetails1() {
   const { id } = useParams();
   const [tourDetails, setTourDetails] = useState(null);
-  const [selectedTourDetail, setSelectedTourDetail] = useState(null);
   const [showImageSlider, setShowImageSlider] = useState(false);
   const [departureDates, setDepartureDates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { token } = theme.useToken();
+  const { token } = theme.useToken(); // Hook gọi ở đầu
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const response = await get(`tours/${id}/details`);
+        console.log("Dữ liệu API:", response.data);
         setTourDetails(response.data);
         const dates = Array.isArray(response.data?.tourDetails)
           ? response.data.tourDetails.map((detail) =>
@@ -43,10 +43,6 @@ function TourDetails() {
             )
           : [];
         setDepartureDates(dates);
-        // Đặt chi tiết tour ban đầu là chi tiết đầu tiên có sẵn
-        if (response.data?.tourDetails?.length > 0) {
-          setSelectedTourDetail(response.data.tourDetails[0]);
-        }
       } catch (error) {
         console.error("Lỗi khi lấy chi tiết tour:", error);
         setTourDetails(null);
@@ -56,8 +52,6 @@ function TourDetails() {
     };
     fetchData();
   }, [id]);
-
-  console.log(selectedTourDetail);
 
   const dateCellRender = (value) => {
     const formattedDate = value.format("YYYY-MM-DD");
@@ -72,14 +66,6 @@ function TourDetails() {
             color: "#fff",
             backgroundColor: "#1890ff",
             borderRadius: "50%",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            const selectedDetail = tourDetails.tourDetails.find(
-              (detail) =>
-                moment(detail.dayStart).format("YYYY-MM-DD") === formattedDate
-            );
-            setSelectedTourDetail(selectedDetail);
           }}
         >
           Ngày khởi hành
@@ -100,14 +86,17 @@ function TourDetails() {
     border: "none",
   };
 
+  // Tách và render nội dung information đẹp hơn
   const renderScheduleContent = (information) => {
     if (!information) return <p>Chưa có thông tin</p>;
 
+    // Tách chuỗi information thành mảng dựa trên \n\n
     const paragraphs = information.split("\n\n").map((para) => para.trim());
 
     return (
       <div className="schedule-content">
         {paragraphs.map((para, index) => {
+          // Nếu đoạn bắt đầu bằng "- ", hiển thị dưới dạng danh sách
           if (para.startsWith("- ")) {
             const items = para
               .split("\n")
@@ -122,6 +111,7 @@ function TourDetails() {
               </ul>
             );
           }
+          // Các đoạn không phải danh sách hiển thị dưới dạng <p>
           return (
             <p key={index} style={{ margin: "10px 0" }}>
               {para}
@@ -172,6 +162,7 @@ function TourDetails() {
             <div className="tour-detail-content">
               <div className="tour-detail-content-left">
                 <div className="image-gallery">
+                  {/* Thông tin ảnh */}
                   <div className="image-gallery-wrapper">
                     <div className="image-thumbnails">
                       {Array.isArray(tourDetails.tourImages) &&
@@ -222,6 +213,7 @@ function TourDetails() {
                   </div>
                 </div>
 
+                {/* Thông tin thêm về chuyến đi */}
                 <div className="overview">
                   <div className="section-detail">
                     <h3 className="title">Thông tin thêm về chuyến đi</h3>
@@ -281,6 +273,7 @@ function TourDetails() {
                   </div>
                 </div>
 
+                {/* Lịch trình */}
                 <div className="schedule">
                   <div className="section-detail">
                     <h3 className="title">Lịch trình</h3>
@@ -307,79 +300,45 @@ function TourDetails() {
                 </div>
               </div>
 
+              {/* Thông tin đặt tour */}
               <div className="tour-detail-content-right">
                 <div className="tour-detail-booking">
                   <div className="border-shadow">
                     <div className="tour-price">
                       <div className="price-oldPrice">
-                        {selectedTourDetail?.discount > 0 ? (
-                          <>
-                            <h4>Giá:</h4>
-                            <div className="price-discount">
-                              <p>
-                                <span>
-                                  {selectedTourDetail?.adultPrice
-                                    ? selectedTourDetail.adultPrice.toLocaleString(
-                                        "vi-VN"
-                                      )
-                                    : "0"}{" "}
-                                  đ
-                                </span>{" "}
-                                / Khách
-                              </p>
-                            </div>
-
-                            <div className="price">
-                              <p>
-                                {(
-                                  selectedTourDetail?.adultPrice -
-                                  (selectedTourDetail?.adultPrice *
-                                    selectedTourDetail?.discount) /
-                                    100
-                                ).toLocaleString("vi-VN") || "0"}{" "}
-                                đ <span>/ Khách</span>
-                              </p>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <h4>Giá:</h4>
-                            <div className="price">
-                              <p>
-                                {selectedTourDetail?.adultPrice.toLocaleString(
-                                  "vi-VN"
-                                ) || "0"}{" "}
-                                đ <span>/ Khách</span>
-                              </p>
-                            </div>
-                          </>
-                        )}
+                        <h4>Giá:</h4>
+                        <div className="price-discount">
+                          <p>
+                            <span>
+                              {tourDetails.price?.old || "6.490.000"} đ
+                            </span>{" "}
+                            / Khách
+                          </p>
+                        </div>
+                      </div>
+                      <div className="price">
+                        <p>
+                          {tourDetails.price?.current || "5.990.000"} đ{" "}
+                          <span>/ Khách</span>
+                        </p>
                       </div>
                     </div>
-
                     <div className="tour-price-info">
                       <div className="tour-price-info-content">
-                        {/* Mã tour */}
-                        {/* <div className="item">
+                        <div className="item">
                           <div className="label">
                             <img src={Code} alt="Biểu tượng mã tour" />
                             <p>
-                              Mã tour:{" "}
-                              <span>
-                                {selectedTourDetail?.code ||
-                                  tourDetails.code ||
-                                  "N/A"}
-                              </span>
+                              Mã tour: <span>{tourDetails.code || "N/A"}</span>
                             </p>
                           </div>
-                        </div> */}
-
+                        </div>
                         <div className="item">
                           <div className="label">
                             <img src={Vitri} alt="Biểu tượng điểm khởi hành" />
                             <p>
                               Khởi hành:{" "}
-                              <span>{tourDetails?.departure || "N/A"}</span>
+                              <span>{tourDetails.departure || "N/A"}</span>
                             </p>
                           </div>
                         </div>
@@ -392,11 +351,7 @@ function TourDetails() {
                             <p>
                               Ngày khởi hành:{" "}
                               <span>
-                                {selectedTourDetail?.dayStart
-                                  ? moment(selectedTourDetail.dayStart).format(
-                                      "DD-MM-YYYY"
-                                    )
-                                  : tourDetails.startDate || "N/A"}
+                                {tourDetails.startDate || "31-12-2024"}
                               </span>
                             </p>
                           </div>
@@ -406,13 +361,7 @@ function TourDetails() {
                             <img src={Time2} alt="Biểu tượng thời gian" />
                             <p>
                               Thời gian:{" "}
-                              <span>
-                                {selectedTourDetail?.duration
-                                  ? `${selectedTourDetail.duration}N${
-                                      selectedTourDetail.duration - 1
-                                    }Đ`
-                                  : "N/A"}
-                              </span>
+                              <span>{tourDetails.duration || "4N3Đ"}</span>
                             </p>
                           </div>
                         </div>
@@ -422,9 +371,7 @@ function TourDetails() {
                             <p>
                               Số chỗ còn{" "}
                               <span>
-                                {selectedTourDetail?.remainingSlots ||
-                                  "Hết chỗ"}{" "}
-                                chỗ
+                                {tourDetails.availableSeats || "9"} chỗ
                               </span>
                             </p>
                           </div>
@@ -441,11 +388,7 @@ function TourDetails() {
                       <button
                         className="btn-bookTour"
                         onClick={() =>
-                          navigate("/order", {
-                            state: {
-                              tourDetails: selectedTourDetail || tourDetails,
-                            },
-                          })
+                          navigate("/order", { state: { tourDetails } })
                         }
                         aria-label="Đặt tour"
                       >
@@ -506,4 +449,4 @@ function TourDetails() {
   );
 }
 
-export default TourDetails;
+export default TourDetails1;

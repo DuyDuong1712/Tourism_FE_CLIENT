@@ -5,9 +5,12 @@ import { Carousel } from "antd";
 function ImageSlider({ image, onCancel }) {
   const contentStyle = {
     margin: 0,
-    width: "100%",
-    height: "100%", // Sử dụng 100% để khớp với SCSS
+    width: "100% !important", // Chiếm toàn bộ chiều ngang
+    height: "100% !important",
+    display: "flex !important",
     objectFit: "contain",
+    justifyContent: "center",
+    alignItems: "center",
   };
 
   return (
@@ -20,17 +23,41 @@ function ImageSlider({ image, onCancel }) {
           <Carousel arrows infinite={false}>
             {image && Array.isArray(image) && image.length > 0 ? (
               image.map((item, index) => (
-                <div key={index}>
+                <div
+                  key={index}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <img
                     className="img"
-                    style={contentStyle}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                    }}
                     src={item?.imageUrl}
                     alt={`Hình ảnh ${index + 1}`}
                   />
                 </div>
               ))
             ) : (
-              <div>Không có hình ảnh để hiển thị</div>
+              <div>
+                <img
+                  className="img"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                  }}
+                  src="../../assets/images/no-image.png"
+                  alt={`Hình ảnh`}
+                />
+              </div>
             )}
           </Carousel>
         </div>

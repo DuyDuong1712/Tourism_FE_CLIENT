@@ -417,6 +417,10 @@
     .note-container {
       position: relative;
       z-index: 220;
+      width: 100%;
+      max-width: 1200px;
+      height: 90%;
+      flex-shrink: 0;
     }
   }
 }
