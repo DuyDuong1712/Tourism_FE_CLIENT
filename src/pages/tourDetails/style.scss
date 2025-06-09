@@ -89,6 +89,8 @@
                   justify-content: flex-start;
                   align-items: flex-start;
                   gap: 0.5rem;
+                  overflow-y: auto; // Thêm dòng này
+                  max-height: 100%; // Giới hạn chiều cao
 
                   .thumnails-animate {
                     position: relative;

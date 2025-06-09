@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "./style.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import { get } from "../../utils/axios-http/axios-http";
-import { Calendar, Collapse, theme } from "antd";
+import { Calendar, Collapse, theme, message } from "antd";
 import { CaretRightOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import { debounce } from "lodash";
+import { format, parseISO } from "date-fns";
 import ImageSlider from "./imageSlider";
 import Map from "../../assets/images/map.png";
 import Eat from "../../assets/images/eat.png";
@@ -17,32 +19,52 @@ import Vitri from "../../assets/images/vitri.png";
 import Calenda from "../../assets/images/celanda.png";
 import Time2 from "../../assets/images/time.png";
 import Concho from "../../assets/images/concho.png";
-import moment from "moment";
 
 const { Panel } = Collapse;
 
 function TourDetails1() {
   const { id } = useParams();
   const [tourDetails, setTourDetails] = useState(null);
+  const [selectedTourDetail, setSelectedTourDetail] = useState(null);
   const [showImageSlider, setShowImageSlider] = useState(false);
   const [departureDates, setDepartureDates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { token } = theme.useToken(); // Hook gọi ở đầu
+  const { token } = theme.useToken();
+
+  // Debounce để hạn chế cập nhật trạng thái khi nhấp nhanh
+  const debouncedSetSelectedTourDetail = debounce(setSelectedTourDetail, 300);
+
+  const handleBookTour = () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      message.warning("Vui lòng đăng nhập để đặt tour!");
+      navigate("/login");
+      return;
+    }
+    navigate("/order", {
+      state: {
+        tourDetails: selectedTourDetail || tourDetails,
+      },
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const response = await get(`tours/${id}/details`);
-        console.log("Dữ liệu API:", response.data);
         setTourDetails(response.data);
         const dates = Array.isArray(response.data?.tourDetails)
-          ? response.data.tourDetails.map((detail) =>
-              moment(detail.dayStart).format("YYYY-MM-DD")
-            )
+          ? response.data.tourDetails.map((detail) => ({
+              formattedDate: format(parseISO(detail.dayStart), "yyyy-MM-dd"),
+              detail,
+            }))
           : [];
         setDepartureDates(dates);
+        if (response.data?.tourDetails?.length > 0) {
+          setSelectedTourDetail(response.data.tourDetails[0]);
+        }
       } catch (error) {
         console.error("Lỗi khi lấy chi tiết tour:", error);
         setTourDetails(null);
@@ -54,11 +76,11 @@ function TourDetails1() {
   }, [id]);
 
   const dateCellRender = (value) => {
-    const formattedDate = value.format("YYYY-MM-DD");
-    if (
-      Array.isArray(departureDates) &&
-      departureDates.includes(formattedDate)
-    ) {
+    const formattedDate = format(value.toDate(), "yyyy-MM-dd");
+    const selectedDate = departureDates.find(
+      (date) => date.formattedDate === formattedDate
+    );
+    if (selectedDate) {
       return (
         <div
           style={{
@@ -66,7 +88,9 @@ function TourDetails1() {
             color: "#fff",
             backgroundColor: "#1890ff",
             borderRadius: "50%",
+            cursor: "pointer",
           }}
+          onClick={() => debouncedSetSelectedTourDetail(selectedDate.detail)}
         >
           Ngày khởi hành
         </div>
@@ -76,7 +100,7 @@ function TourDetails1() {
   };
 
   const onPanelChange = (value, mode) => {
-    console.log(value.format("YYYY-MM-DD"), mode);
+    console.log(format(value.toDate(), "yyyy-MM-dd"), mode);
   };
 
   const panelStyle = {
@@ -86,17 +110,14 @@ function TourDetails1() {
     border: "none",
   };
 
-  // Tách và render nội dung information đẹp hơn
   const renderScheduleContent = (information) => {
     if (!information) return <p>Chưa có thông tin</p>;
 
-    // Tách chuỗi information thành mảng dựa trên \n\n
     const paragraphs = information.split("\n\n").map((para) => para.trim());
 
     return (
       <div className="schedule-content">
         {paragraphs.map((para, index) => {
-          // Nếu đoạn bắt đầu bằng "- ", hiển thị dưới dạng danh sách
           if (para.startsWith("- ")) {
             const items = para
               .split("\n")
@@ -111,7 +132,6 @@ function TourDetails1() {
               </ul>
             );
           }
-          // Các đoạn không phải danh sách hiển thị dưới dạng <p>
           return (
             <p key={index} style={{ margin: "10px 0" }}>
               {para}
@@ -130,6 +150,63 @@ function TourDetails1() {
         style: panelStyle,
       }))
     : [];
+
+  // Memoize tour-price-info-content để tránh render lại không cần thiết
+  const tourPriceInfoContent = useMemo(() => {
+    return (
+      <div className="tour-price-info-content">
+        <div className="item">
+          <div className="label">
+            <img src={Vitri} alt="Biểu tượng điểm khởi hành" />
+            <p>
+              Khởi hành: <span>{tourDetails?.departure || "N/A"}</span>
+            </p>
+          </div>
+        </div>
+        <div className="item">
+          <div className="label">
+            <img src={Calenda} alt="Biểu tượng ngày khởi hành" />
+            <p>
+              Ngày khởi hành:{" "}
+              <span>
+                {selectedTourDetail?.dayStart
+                  ? format(parseISO(selectedTourDetail.dayStart), "dd-MM-yyyy")
+                  : tourDetails?.startDate
+                  ? format(parseISO(tourDetails.startDate), "dd-MM-yyyy")
+                  : "N/A"}
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="item">
+          <div className="label">
+            <img src={Time2} alt="Biểu tượng thời gian" />
+            <p>
+              Thời gian:{" "}
+              <span>
+                {selectedTourDetail?.duration !== undefined
+                  ? selectedTourDetail.duration === 0
+                    ? "1N"
+                    : `${selectedTourDetail.duration}N${
+                        selectedTourDetail.duration - 1
+                      }Đ`
+                  : "N/A"}
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="item">
+          <div className="label">
+            <img src={Concho} alt="Biểu tượng số chỗ còn" />
+            <p>
+              Số chỗ còn{" "}
+              <span>{selectedTourDetail?.remainingSlots || "Hết chỗ"} chỗ</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }, [selectedTourDetail, tourDetails]);
 
   if (isLoading) return <div>Đang tải...</div>;
   if (!tourDetails) return <div>Không tìm thấy tour</div>;
@@ -162,7 +239,6 @@ function TourDetails1() {
             <div className="tour-detail-content">
               <div className="tour-detail-content-left">
                 <div className="image-gallery">
-                  {/* Thông tin ảnh */}
                   <div className="image-gallery-wrapper">
                     <div className="image-thumbnails">
                       {Array.isArray(tourDetails.tourImages) &&
@@ -185,6 +261,7 @@ function TourDetails1() {
                         <p>Không có hình ảnh</p>
                       )}
                     </div>
+
                     <div
                       className="image-main"
                       onClick={() => setShowImageSlider(true)}
@@ -213,7 +290,6 @@ function TourDetails1() {
                   </div>
                 </div>
 
-                {/* Thông tin thêm về chuyến đi */}
                 <div className="overview">
                   <div className="section-detail">
                     <h3 className="title">Thông tin thêm về chuyến đi</h3>
@@ -273,7 +349,6 @@ function TourDetails1() {
                   </div>
                 </div>
 
-                {/* Lịch trình */}
                 <div className="schedule">
                   <div className="section-detail">
                     <h3 className="title">Lịch trình</h3>
@@ -300,96 +375,69 @@ function TourDetails1() {
                 </div>
               </div>
 
-              {/* Thông tin đặt tour */}
               <div className="tour-detail-content-right">
                 <div className="tour-detail-booking">
                   <div className="border-shadow">
                     <div className="tour-price">
                       <div className="price-oldPrice">
-                        <h4>Giá:</h4>
-                        <div className="price-discount">
-                          <p>
-                            <span>
-                              {tourDetails.price?.old || "6.490.000"} đ
-                            </span>{" "}
-                            / Khách
-                          </p>
-                        </div>
-                      </div>
-                      <div className="price">
-                        <p>
-                          {tourDetails.price?.current || "5.990.000"} đ{" "}
-                          <span>/ Khách</span>
-                        </p>
+                        {selectedTourDetail?.discount > 0 ? (
+                          <>
+                            <h4>Giá:</h4>
+                            <div className="price-discount">
+                              <p>
+                                <span>
+                                  {selectedTourDetail?.adultPrice
+                                    ? selectedTourDetail.adultPrice.toLocaleString(
+                                        "vi-VN"
+                                      )
+                                    : "0"}{" "}
+                                  đ
+                                </span>{" "}
+                                / Khách
+                              </p>
+                            </div>
+                            <div className="price">
+                              <p>
+                                {(
+                                  selectedTourDetail?.adultPrice -
+                                  (selectedTourDetail?.adultPrice *
+                                    selectedTourDetail?.discount) /
+                                    100
+                                ).toLocaleString("vi-VN") || "0"}{" "}
+                                đ <span>/ Khách</span>
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <h4>Giá:</h4>
+                            <div className="price">
+                              <p>
+                                {selectedTourDetail?.adultPrice.toLocaleString(
+                                  "vi-VN"
+                                ) || "0"}{" "}
+                                đ <span>/ Khách</span>
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
+
                     <div className="tour-price-info">
-                      <div className="tour-price-info-content">
-                        <div className="item">
-                          <div className="label">
-                            <img src={Code} alt="Biểu tượng mã tour" />
-                            <p>
-                              Mã tour: <span>{tourDetails.code || "N/A"}</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="item">
-                          <div className="label">
-                            <img src={Vitri} alt="Biểu tượng điểm khởi hành" />
-                            <p>
-                              Khởi hành:{" "}
-                              <span>{tourDetails.departure || "N/A"}</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="item">
-                          <div className="label">
-                            <img
-                              src={Calenda}
-                              alt="Biểu tượng ngày khởi hành"
-                            />
-                            <p>
-                              Ngày khởi hành:{" "}
-                              <span>
-                                {tourDetails.startDate || "31-12-2024"}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="item">
-                          <div className="label">
-                            <img src={Time2} alt="Biểu tượng thời gian" />
-                            <p>
-                              Thời gian:{" "}
-                              <span>{tourDetails.duration || "4N3Đ"}</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="item">
-                          <div className="label">
-                            <img src={Concho} alt="Biểu tượng số chỗ còn" />
-                            <p>
-                              Số chỗ còn{" "}
-                              <span>
-                                {tourDetails.availableSeats || "9"} chỗ
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      {tourPriceInfoContent}
                     </div>
+
                     <div className="book-tour-option">
-                      <button
+                      {/* <button
                         className="btn-advise"
                         aria-label="Chọn ngày khác"
                       >
                         Ngày khác
-                      </button>
+                      </button> */}
                       <button
                         className="btn-bookTour"
-                        onClick={() =>
-                          navigate("/order", { state: { tourDetails } })
-                        }
+                        onClick={handleBookTour}
                         aria-label="Đặt tour"
                       >
                         Đặt tour
@@ -449,4 +497,4 @@ function TourDetails1() {
   );
 }
 
-export default TourDetails1;
+export default React.memo(TourDetails1);

@@ -85,14 +85,6 @@ function Tour() {
         buildTree(destinationsData.data)
       );
 
-      // // console.log("destinationChildrens", destinationChildrens);
-
-      // // console.log("response.data", tours);
-      // // console.log("departuresData.data", departuresData.data);
-      // // console.log("destinationsData.data", destinationsData.data);
-      // console.log("transportationsData.data", transportationsData.data);
-      // // console.log("categoriesData.data", categoriesData.data);
-      // // console.log("destinationChildrens", destinationChildrens);
 
       setDepartures(departuresData.data || []);
       setDestinations(destinationChildrens || []);
@@ -102,7 +94,7 @@ function Tour() {
       message.error("Lỗi khi tải dữ liệu tour!");
     } finally {
       // setLoading(false);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -403,7 +395,7 @@ function Tour() {
                   cho quý khách
                 </p>
               </div>
-              <div className="right-sort">
+              {/* <div className="right-sort">
                 <span className="label">Sắp xếp theo: </span>
                 <div className="right-sort-select">
                   <div className="select-container">
@@ -417,7 +409,7 @@ function Tour() {
                     </Select>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="find-tour-content-list-main">
@@ -465,7 +457,9 @@ function Tour() {
                                 <label htmlFor="">Thời gian: </label>
                               </div>
                               <p>
-                                {item.duration}N{item.duration - 1}D
+                                {item.duration == 0
+                                  ? `1N`
+                                  : `${item.duration}N${item.duration - 1}Đ`}
                               </p>
                             </div>
                             <div className="info-tour-code-content">
