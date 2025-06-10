@@ -43,7 +43,8 @@ function TourDetails() {
     }
     navigate("/order", {
       state: {
-        tourDetails: selectedTourDetail || tourDetails,
+        tourDetails: tourDetails,
+        selectedTourDetail: selectedTourDetail,
       },
     });
   };
@@ -200,6 +201,37 @@ function TourDetails() {
               </ul>
             );
           }
+          // Kiểm tra nếu đoạn bắt đầu bằng "(*)"
+          if (para.startsWith("(*)")) {
+            return (
+              <p key={index} style={{ margin: "10px 0", color: "red" }}>
+                {para}
+              </p>
+            );
+          }
+          // Kiểm tra nếu đoạn bắt đầu bằng "(*)"
+          if (para.startsWith("(*)")) {
+            return (
+              <p key={index} style={{ margin: "10px 0", color: "red" }}>
+                {para}
+              </p>
+            );
+          }
+          // Kiểm tra nếu đoạn bắt đầu bằng "*"
+          if (para.startsWith("*")) {
+            const textWithoutAsterisk = para.replace(/^\*/, "").trim();
+            return (
+              <p key={index} style={{ margin: "10px 0" }}>
+                <span>*</span>{" "}
+                <span
+                  style={{ fontWeight: "bold", textDecoration: "underline" }}
+                >
+                  {textWithoutAsterisk}
+                </span>
+              </p>
+            );
+          }
+          // Các đoạn văn bản khác
           return (
             <p key={index} style={{ margin: "10px 0" }}>
               {para}

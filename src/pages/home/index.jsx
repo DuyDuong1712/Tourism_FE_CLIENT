@@ -3,17 +3,17 @@ import Slider from "react-slick";
 import moment from "moment";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Banner from "../../assets/images/TopBannerWeb.png";
+import Banner from "../../assets/images/sl_250506_he-2025.png";
 import Oto from "../../assets/images/oto.png";
 import TourTet from "../../assets/images/tourtTet.png";
 import Dimond from "../../assets/images/dimond.png";
 import TieuChuan from "../../assets/images/tieuchuan.png";
 import TietKiem from "../../assets/images/tietkiem.png";
 import GiaTot from "../../assets/images/giatot.png";
-import Slider1 from "../../assets/images/slider1.png";
-import Slider2 from "../../assets/images/slider2.png";
-import Slider3 from "../../assets/images/slider3.png";
-import Slider4 from "../../assets/images/slider4.png";
+import Slider1 from "../../assets/images/bn_250522_bannertourtrungquockv.png";
+import Slider2 from "../../assets/images/bn_250603_artboard-1-copy.png";
+import Slider3 from "../../assets/images/bn_250605_banner-pushbantourtram.png";
+import Slider4 from "../../assets/images/bn_250603_artboard-1.png";
 import Slider5 from "../../assets/images/slider5.png";
 import Vitri from "../../assets/images/vitri.png";
 import Code from "../../assets/images/code.png";
@@ -203,12 +203,6 @@ function Home() {
           <img src={Banner} alt="" />
         </div>
         <div className="banner-content">
-          <div className="banner-search-tab">
-            <div className="bst-content">
-              <img src={Oto} alt="" />
-              <p>Tour trọn gói</p>
-            </div>
-          </div>
           <div className="banner-search-body">
             <div className="bsb-container">
               <div className="bsb-input">
@@ -318,15 +312,6 @@ function Home() {
         <div className="select-tour-container">
           <div className="select-tour-button">
             <div className="stb-list">
-              <button onClick={() => handleNavigate("tet")}>
-                <img src={TourTet} alt="" />
-              </button>
-              <p>
-                TOUR <br />
-                TẾT
-              </p>
-            </div>
-            <div className="stb-list">
               <button onClick={() => handleNavigate("du-lich-cao-cap")}>
                 <img src={Dimond} alt="" />
               </button>
@@ -378,7 +363,7 @@ function Home() {
           <div className="tour-feature-header">
             <h1>Khám phá sản phẩm vietravel</h1>
             <div className="horizontal-divider"></div>
-            <h2>
+            <h2 style={{ width: "800px" }}>
               Hãy tận hưởng trải nghiệm du lịch chuyên nghiệp, mang lại cho bạn
               những khoảnh khắc tuyệt vời và nâng tầm cuộc sống. Chúng tôi cam
               kết mang đến những chuyến đi đáng nhớ, giúp bạn khám phá thế giới

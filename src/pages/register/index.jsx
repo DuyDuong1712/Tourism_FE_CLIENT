@@ -25,7 +25,9 @@ function Register() {
       }
     } catch (error) {
       console.error(error);
-      message.error("Đăng ký thất bại! Hãy thử lại.");
+      message.error(
+        error.response?.data?.message || "Đăng ký thất bại! Hãy thử lại."
+      );
     } finally {
       setLoading(false);
     }

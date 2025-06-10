@@ -55,7 +55,8 @@ export const register = async (data) => {
         return response.data;
     } catch (error) {
         console.log(error);
-        throw new Error('Tạo tài khoản không thành công. Vui lòng thử lại!');
+        throw error;
+        // throw new Error('Tạo tài khoản không thành công. Vui lòng thử lại!');
     }
 }
 
