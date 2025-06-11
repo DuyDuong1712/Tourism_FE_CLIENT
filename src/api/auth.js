@@ -5,6 +5,7 @@ import axios from "axios";
 
 const baseUrl = "http://localhost:8080/travel/api/auth";
 
+
 export const login = async (data) => {
     try {
         const {

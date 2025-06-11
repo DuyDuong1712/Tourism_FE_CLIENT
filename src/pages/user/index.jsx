@@ -44,16 +44,19 @@ function User() {
       message.error("Cập nhật thông tin thất bại!");
     }
   };
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getUser("user/profile");
-      setUser(response);
-      setName(response.user.fullName);
-      setPhone(response.user.phoneNumber);
-      setAddress(response.user.address);
+      const response = await getUser("users/profile");
+      setUser(response.data);
+      setName(response.data.fullname);
+      setPhone(response.data.phone);
+      setAddress(response.data.address);
     };
     fetchData();
   }, []);
+
+  console.log(user);
 
   return (
     <div className="user">
@@ -77,8 +80,8 @@ function User() {
                 <div className="row">
                   <img src="" alt="" />
                   <div className="info">
-                    <div className="user-id">{user?.user?.fullName}</div>
-                    <div className="user-email">{user?.user?.email}</div>
+                    <div className="user-id">{user?.fullname}</div>
+                    <div className="user-email">{user?.email}</div>
                   </div>
                 </div>
               </div>
@@ -223,7 +226,7 @@ function User() {
                     </div>
                     <div className="item">
                       <div className="left">Email</div>
-                      <div className="right">{user?.user?.email}</div>
+                      <div className="right">{user?.email}</div>
                     </div>
                     <div className="item">
                       <div className="left">Địa chỉ</div>

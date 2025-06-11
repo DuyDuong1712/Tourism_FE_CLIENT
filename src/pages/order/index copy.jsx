@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from "react";
 import "./style.scss";
 import { useLocation, useNavigate } from "react-router-dom";
+import Map from "../../assets/images/map.png";
+import Eat from "../../assets/images/eat.png";
+import Friend from "../../assets/images/friend.png";
+import Oto from "../../assets/images/oto.png";
+import Sale from "../../assets/images/sale.png";
 import Vitri from "../../assets/images/vitri.png";
 import Calendar from "../../assets/images/celanda.png";
 import Time2 from "../../assets/images/time.png";
 import Concho from "../../assets/images/concho.png";
 import { getUser, post } from "../../utils/axios-http/axios-http";
 import { message, Input, InputNumber, Select, DatePicker, Switch } from "antd";
-import moment from "moment";
+import { format, parseISO } from "date-fns";
+import { Option } from "antd/es/mentions";
 import TextArea from "antd/es/input/TextArea";
 
 const PriceDisplay = ({ label, price, discount }) => (
   <div className="input-border">
     <label>{label}:</label>
-    <div>
+    <p>
       {price === 0 ? (
         <div className="price">
           <p>0 đ</p>
@@ -38,20 +44,15 @@ const PriceDisplay = ({ label, price, discount }) => (
           <p>{price ? price.toLocaleString("vi-VN") : "0"} đ</p>
         </div>
       )}
-    </div>
+    </p>
   </div>
 );
 
+// Component để hiển thị thông tin hành khách
 const PassengerForm = ({ index, type, passenger, onUpdate }) => {
   const handleSwitchChange = (checked) => {
     onUpdate(index, { ...passenger, singleRoomSupplement: checked });
   };
-
-  const birthDateValue = passenger.birthDate
-    ? moment(passenger.birthDate, "YYYY-MM-DD", true).isValid()
-      ? moment(passenger.birthDate, "YYYY-MM-DD")
-      : null
-    : null;
 
   return (
     <div className="passenger-form">
@@ -74,12 +75,9 @@ const PassengerForm = ({ index, type, passenger, onUpdate }) => {
             Ngày sinh <span style={{ color: "red" }}>*</span>
           </label>
           <DatePicker
-            value={birthDateValue}
+            value={passenger.birthDate}
             onChange={(date) =>
-              onUpdate(index, {
-                ...passenger,
-                birthDate: date ? date.format("YYYY-MM-DD") : null,
-              })
+              onUpdate(index, { ...passenger, birthDate: date })
             }
             placeholder="Chọn ngày sinh"
             format="DD-MM-YYYY"
@@ -136,36 +134,35 @@ const calculateTotalPrice = (
 
   let total = 0;
 
+  // Tính giá cho tất cả người lớn (giá cơ bản)
   total += adultQuantity * adultPrice;
-  total += childrenQuantity * childrenPrice;
-  total += childQuantity * smallChildrenPrice;
-  total += babyQuantity * babyPrice;
 
-  // Chỉ tính phụ thu phòng đơn nếu có hành khách chọn
+  // Thêm phụ thu phòng đơn cho những người lớn chọn phòng đơn
   const singleRoomAdults = adults.filter(
     (adult) => adult.singleRoomSupplement
   ).length;
   total += singleRoomAdults * singleRoomPrice;
 
-  const originalPrice = total;
-  const discountAmount = discount > 0 ? (total * discount) / 100 : 0;
-  const finalPrice = total - discountAmount;
+  // Tính giá cho các loại hành khách khác
+  total += childrenQuantity * childrenPrice;
+  total += childQuantity * smallChildrenPrice;
+  total += babyQuantity * babyPrice;
 
-  return {
-    originalPrice,
-    discountAmount,
-    finalPrice,
-    singleRoomQuantity: singleRoomAdults,
-  };
+  // Áp dụng giảm giá nếu có
+  if (discount > 0) {
+    total = total - (total * discount) / 100;
+  }
+
+  return total;
 };
 
-function Order() {
+function Order1() {
   const location = useLocation();
   const tourDetails = location.state?.tourDetails;
   const selectedTourDetail = location.state?.selectedTourDetail;
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState([]);
   const [userTT, setUserTT] = useState({});
   const [adultQuantity, setAdultQuantity] = useState(1);
   const [childrenQuantity, setChildrenQuantity] = useState(0);
@@ -174,11 +171,9 @@ function Order() {
   const [singleRoomQuantity, setSingleRoomQuantity] = useState(0);
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [originalPrice, setOriginalPrice] = useState(0);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(0);
-  const remainingSlots = Math.max(0, selectedTourDetail?.remainingSlots || 0);
+  const remainingSlots = selectedTourDetail?.remainingSlots || 0;
 
+  // State để lưu thông tin hành khách
   const [adults, setAdults] = useState([
     { fullname: "", birthDate: null, gender: "", singleRoomSupplement: false },
   ]);
@@ -186,9 +181,109 @@ function Order() {
   const [smallChildren, setSmallChildren] = useState([]);
   const [babies, setBabies] = useState([]);
 
+  // State để lưu tổng tiền
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  // Tính tổng số hành khách
   const totalPassengers =
     adultQuantity + childrenQuantity + childQuantity + babyQuantity;
 
+  // Cập nhật danh sách hành khách khi số lượng thay đổi
+  useEffect(() => {
+    setAdults((prev) =>
+      Array(adultQuantity)
+        .fill()
+        .map(
+          (_, i) =>
+            prev[i] || {
+              fullname: "",
+              birthDate: null,
+              gender: "",
+              singleRoomSupplement: false,
+            }
+        )
+    );
+  }, [adultQuantity]);
+
+  useEffect(() => {
+    setChildren((prev) =>
+      Array(childrenQuantity)
+        .fill()
+        .map((_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" })
+    );
+  }, [childrenQuantity]);
+
+  useEffect(() => {
+    setSmallChildren((prev) =>
+      Array(childQuantity)
+        .fill()
+        .map((_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" })
+    );
+  }, [childQuantity]);
+
+  useEffect(() => {
+    setBabies((prev) =>
+      Array(babyQuantity)
+        .fill()
+        .map((_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" })
+    );
+  }, [babyQuantity]);
+
+  // Cập nhật tổng tiền khi có thay đổi
+  useEffect(() => {
+    const total = calculateTotalPrice(
+      selectedTourDetail,
+      adultQuantity,
+      childrenQuantity,
+      childQuantity,
+      babyQuantity,
+      adults
+    );
+    setTotalPrice(total);
+  }, [
+    selectedTourDetail,
+    adultQuantity,
+    childrenQuantity,
+    childQuantity,
+    babyQuantity,
+    adults,
+  ]);
+
+  // Hàm cập nhật thông tin hành khách
+  const updatePassenger = (type, index, data) => {
+    const updatedData = {
+      ...data,
+      birthDate: data.birthDate ? data.birthDate.format("YYYY-MM-DD") : null,
+    };
+
+    if (type === "Người lớn") {
+      setAdults((prev) => {
+        const newAdults = [...prev];
+        newAdults[index] = updatedData;
+        return newAdults;
+      });
+    } else if (type === "Trẻ em") {
+      setChildren((prev) => {
+        const newChildren = [...prev];
+        newChildren[index] = updatedData;
+        return newChildren;
+      });
+    } else if (type === "Trẻ nhỏ") {
+      setSmallChildren((prev) => {
+        const newSmallChildren = [...prev];
+        newSmallChildren[index] = updatedData;
+        return newSmallChildren;
+      });
+    } else if (type === "Em bé") {
+      setBabies((prev) => {
+        const newBabies = [...prev];
+        newBabies[index] = updatedData;
+        return newBabies;
+      });
+    }
+  };
+
+  // Đồng bộ userTT với user.user khi component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -209,183 +304,21 @@ function Order() {
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   // Chỉ cập nhật nếu số lượng thay đổi
-  //   if (
-  //     adults.length !== adultQuantity ||
-  //     children.length !== childrenQuantity ||
-  //     smallChildren.length !== childQuantity ||
-  //     babies.length !== babyQuantity
-  //   ) {
-  //     setAdults((prev) =>
-  //       Array(adultQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) =>
-  //             prev[i] || {
-  //               fullname: "",
-  //               birthDate: null,
-  //               gender: "",
-  //               singleRoomSupplement: false,
-  //             }
-  //         )
-  //     );
-  //     setChildren((prev) =>
-  //       Array(childrenQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //     setSmallChildren((prev) =>
-  //       Array(childQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //     setBabies((prev) =>
-  //       Array(babyQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //   }
-
-  //   // Cập nhật singleRoomQuantity và giá
-  //   const singleRoomCount = adults.filter(
-  //     (adult) => adult.singleRoomSupplement
-  //   ).length;
-  //   setSingleRoomQuantity(singleRoomCount);
-
-  //   const { originalPrice, discountAmount, finalPrice } = calculateTotalPrice(
-  //     selectedTourDetail,
-  //     adultQuantity,
-  //     childrenQuantity,
-  //     childQuantity,
-  //     babyQuantity,
-  //     adults
-  //   );
-  //   setOriginalPrice(originalPrice);
-  //   setDiscountAmount(discountAmount);
-  //   setFinalPrice(finalPrice);
-  // }, [
-  //   adultQuantity,
-  //   childrenQuantity,
-  //   childQuantity,
-  //   babyQuantity,
-  //   selectedTourDetail,
-  // ]);
-
-  useEffect(() => {
-    // Chỉ cập nhật nếu số lượng thay đổi
-    if (
-      adults.length !== adultQuantity ||
-      children.length !== childrenQuantity ||
-      smallChildren.length !== childQuantity ||
-      babies.length !== babyQuantity
-    ) {
-      setAdults((prev) =>
-        Array(adultQuantity)
-          .fill()
-          .map(
-            (_, i) =>
-              prev[i] || {
-                fullname: "",
-                birthDate: null,
-                gender: "",
-                singleRoomSupplement: false,
-              }
-          )
-      );
-      setChildren((prev) =>
-        Array(childrenQuantity)
-          .fill()
-          .map(
-            (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-          )
-      );
-      setSmallChildren((prev) =>
-        Array(childQuantity)
-          .fill()
-          .map(
-            (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-          )
-      );
-      setBabies((prev) =>
-        Array(babyQuantity)
-          .fill()
-          .map(
-            (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-          )
-      );
-    }
-
-    // Cập nhật singleRoomQuantity và giá
-    const { originalPrice, discountAmount, finalPrice, singleRoomQuantity } =
-      calculateTotalPrice(
-        selectedTourDetail,
-        adultQuantity,
-        childrenQuantity,
-        childQuantity,
-        babyQuantity,
-        adults
-      );
-    setSingleRoomQuantity(singleRoomQuantity);
-    setOriginalPrice(originalPrice);
-    setDiscountAmount(discountAmount);
-    setFinalPrice(finalPrice);
-  }, [
-    adultQuantity,
-    childrenQuantity,
-    childQuantity,
-    babyQuantity,
-    selectedTourDetail,
-    adults, // Thêm adults vào dependency
-  ]);
-
-  const updatePassenger = (type, index, data) => {
-    if (type === "Người lớn") {
-      setAdults((prev) => {
-        const newAdults = [...prev];
-        newAdults[index] = { ...data };
-        return newAdults;
-      });
-    } else if (type === "Trẻ em") {
-      setChildren((prev) => {
-        const newChildren = [...prev];
-        newChildren[index] = { ...data };
-        return newChildren;
-      });
-    } else if (type === "Trẻ nhỏ") {
-      setSmallChildren((prev) => {
-        const newSmallChildren = [...prev];
-        newSmallChildren[index] = { ...data };
-        return newSmallChildren;
-      });
-    } else if (type === "Em bé") {
-      setBabies((prev) => {
-        const newBabies = [...prev];
-        newBabies[index] = { ...data };
-        return newBabies;
-      });
-    }
-  };
-
+  // Hàm kiểm tra tổng số hành khách
   const checkTotalPassengers = (newAdult, newChildren, newChild, newBaby) => {
-    const total = newAdult + newChildren + newChild + newBaby;
-    if (total > remainingSlots) {
+    const totalPassengers = newAdult + newChildren + newChild + newBaby;
+    if (totalPassengers > remainingSlots) {
       message.error(
-        `Tổng số hành khách (${total}) vượt quá số chỗ còn lại (${remainingSlots})!`
+        `Tổng số hành khách (${totalPassengers}) vượt quá số chỗ còn lại (${remainingSlots})!`
       );
       return false;
     }
     return true;
   };
 
+  // Cập nhật số lượng người lớn
   const handleAdultQuantityChange = (value) => {
-    const newValue = Math.max(1, Number(value) || 1);
+    const newValue = Number(value) || 1;
     if (
       checkTotalPassengers(
         newValue,
@@ -398,8 +331,9 @@ function Order() {
     }
   };
 
+  // Cập nhật số lượng trẻ em
   const handleChildrenQuantityChange = (value) => {
-    const newValue = Math.max(0, Number(value) || 0);
+    const newValue = Number(value) || 0;
     if (
       checkTotalPassengers(adultQuantity, newValue, childQuantity, babyQuantity)
     ) {
@@ -407,8 +341,9 @@ function Order() {
     }
   };
 
+  // Cập nhật số lượng trẻ nhỏ
   const handleChildQuantityChange = (value) => {
-    const newValue = Math.max(0, Number(value) || 0);
+    const newValue = Number(value) || 0;
     if (
       checkTotalPassengers(
         adultQuantity,
@@ -421,8 +356,9 @@ function Order() {
     }
   };
 
+  // Cập nhật số lượng em bé
   const handleBabyQuantityChange = (value) => {
-    const newValue = Math.max(0, Number(value) || 0);
+    const newValue = Number(value) || 0;
     if (
       checkTotalPassengers(
         adultQuantity,
@@ -435,85 +371,6 @@ function Order() {
     }
   };
 
-  const getMaxValue = (currentValue, otherValues) => {
-    const otherTotal = otherValues.reduce((sum, val) => sum + val, 0);
-    return Math.max(0, remainingSlots - otherTotal);
-  };
-
-  // const handleOrder = async () => {
-  //   if (totalPassengers > remainingSlots) {
-  //     message.error(
-  //       `Tổng số hành khách (${totalPassengers}) vượt quá số chỗ còn lại (${remainingSlots})!`
-  //     );
-  //     return;
-  //   }
-
-  //   if (!userTT.fullname || !userTT.phone || !userTT.email || !userTT.address) {
-  //     message.error("Vui lòng điền đầy đủ thông tin liên lạc!");
-  //     return;
-  //   }
-
-  //   const allPassengersValid = [
-  //     ...adults,
-  //     ...children,
-  //     ...smallChildren,
-  //     ...babies,
-  //   ].every(
-  //     (p) =>
-  //       p.fullname &&
-  //       p.gender &&
-  //       (p.birthDate === null ||
-  //         moment(p.birthDate, "YYYY-MM-DD", true).isValid())
-  //   );
-
-  //   if (!allPassengersValid) {
-  //     message.error("Vui lòng điền đầy đủ thông tin hành khách!");
-  //     return;
-  //   }
-
-  //   const formatPassenger = (passenger) => ({
-  //     ...passenger,
-  //     birthDate: passenger.birthDate || null,
-  //   });
-
-  //   const orderData = {
-  //     tourDetailId: selectedTourDetail?.id,
-  //     userId: user?.id,
-  //     fullname: userTT.fullname,
-  //     email: userTT.email,
-  //     phone: userTT.phone,
-  //     address: userTT.address,
-  //     adultQuantity,
-  //     childrenQuantity,
-  //     childQuantity,
-  //     babyQuantity,
-  //     singleRoomSupplementPrice:
-  //       selectedTourDetail?.singleRoomSupplementPrice || 0,
-  //     singleRoomSupplementQuantity: singleRoomQuantity,
-  //     originalPrice,
-  //     discountAmount,
-  //     finalPrice,
-  //     note,
-  //     paymentMethod,
-  //     passengers: [
-  //       ...adults.map(formatPassenger),
-  //       ...children.map(formatPassenger),
-  //       ...smallChildren.map(formatPassenger),
-  //       ...babies.map(formatPassenger),
-  //     ],
-  //   };
-
-  //   try {
-  //     const response = await post("bookings", orderData);
-  //     if (response) {
-  //       message.success("Đặt tour thành công!");
-  //       navigate("/");
-  //     }
-  //   } catch (error) {
-  //     console.error("Lỗi khi đặt tour:", error);
-  //     message.error("Đặt tour thất bại! Vui lòng thử lại");
-  //   }
-  // };
   const handleOrder = async () => {
     if (totalPassengers > remainingSlots) {
       message.error(
@@ -522,72 +379,50 @@ function Order() {
       return;
     }
 
+    // Kiểm tra thông tin liên lạc
     if (!userTT.fullname || !userTT.phone || !userTT.email || !userTT.address) {
       message.error("Vui lòng điền đầy đủ thông tin liên lạc!");
       return;
     }
 
+    // Kiểm tra thông tin hành khách
     const allPassengersValid = [
       ...adults,
       ...children,
       ...smallChildren,
       ...babies,
-    ].every(
-      (p) =>
-        p.fullname &&
-        p.gender &&
-        (p.birthDate === null ||
-          moment(p.birthDate, "YYYY-MM-DD", true).isValid())
-    );
+    ].every((p) => p.fullName && p.birthDate && p.gender);
 
     if (!allPassengersValid) {
       message.error("Vui lòng điền đầy đủ thông tin hành khách!");
       return;
     }
 
-    const { singleRoomQuantity } = calculateTotalPrice(
-      selectedTourDetail,
-      adultQuantity,
-      childrenQuantity,
-      childQuantity,
-      babyQuantity,
-      adults
-    );
-
-    const formatPassenger = (passenger) => ({
-      ...passenger,
-      birthDate: passenger.birthDate || null,
-    });
-
     const orderData = {
-      tourDetailId: selectedTourDetail?.id,
-      userId: user?.id,
       fullname: userTT.fullname,
       email: userTT.email,
       phone: userTT.phone,
       address: userTT.address,
+      adultPrice: selectedTourDetail?.adultPrice || 0,
       adultQuantity,
+      childrenPrice: selectedTourDetail?.childrenPrice || 0,
       childrenQuantity,
+      childPrice: selectedTourDetail?.childPrice || 0,
       childQuantity,
+      babyPrice: selectedTourDetail?.babyPrice || 0,
       babyQuantity,
       singleRoomSupplementPrice:
         selectedTourDetail?.singleRoomSupplementPrice || 0,
       singleRoomSupplementQuantity: singleRoomQuantity,
-      originalPrice,
-      discountAmount,
-      finalPrice,
       note,
       paymentMethod,
-      passengers: [
-        ...adults.map(formatPassenger),
-        ...children.map(formatPassenger),
-        ...smallChildren.map(formatPassenger),
-        ...babies.map(formatPassenger),
-      ],
+      tourDetailId: selectedTourDetail?.id,
+      userId: user?.id,
     };
+    console.log(orderData, "orderData");
 
     try {
-      const response = await post("bookings", orderData);
+      const response = await post("orders/book-tour", orderData);
       if (response) {
         message.success("Đặt tour thành công!");
         navigate("/");
@@ -597,6 +432,14 @@ function Order() {
       message.error("Đặt tour thất bại! Vui lòng thử lại");
     }
   };
+
+  // Tính toán max value cho từng loại hành khách
+  const getMaxValue = (currentValue, otherValues) => {
+    const otherTotal = otherValues.reduce((sum, val) => sum + val, 0);
+    return remainingSlots - otherTotal + currentValue;
+  };
+
+  console.log("selectedTourDetail", selectedTourDetail);
 
   return (
     <div className="order">
@@ -650,7 +493,7 @@ function Order() {
             </div>
             <div className="order-contact">
               <h3>Thông tin liên lạc</h3>
-              <div>
+              <form>
                 <div className="booking-contact-row">
                   <div className="linee-r">
                     <div className="input-border">
@@ -715,7 +558,7 @@ function Order() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
 
             <div className="order-item">
@@ -733,7 +576,7 @@ function Order() {
                           <div className="quantity">
                             <InputNumber
                               min={1}
-                              value={adultQuantity}
+                              defaultValue={1}
                               max={getMaxValue(adultQuantity, [
                                 childrenQuantity,
                                 childQuantity,
@@ -762,7 +605,7 @@ function Order() {
                           <div className="quantity">
                             <InputNumber
                               min={0}
-                              value={childrenQuantity}
+                              defaultValue={0}
                               max={getMaxValue(childrenQuantity, [
                                 adultQuantity,
                                 childQuantity,
@@ -794,7 +637,7 @@ function Order() {
                           <div className="quantity">
                             <InputNumber
                               min={0}
-                              value={childQuantity}
+                              defaultValue={0}
                               max={getMaxValue(childQuantity, [
                                 adultQuantity,
                                 childrenQuantity,
@@ -823,12 +666,8 @@ function Order() {
                           <div className="quantity">
                             <InputNumber
                               min={0}
-                              value={babyQuantity}
-                              max={getMaxValue(babyQuantity, [
-                                adultQuantity,
-                                childrenQuantity,
-                                childQuantity,
-                              ])}
+                              defaultValue={0}
+                              max={getMaxValue(babyQuantity, [adultQuantity, childrenQuantity, childQuantity])}
                               onChange={handleBabyQuantityChange}
                               controls={{
                                 upIcon:
@@ -909,7 +748,7 @@ function Order() {
                   <div className="booking-info-divider"></div>
                   <div className="item booking-info-adults">
                     <div className="item-title">
-                      Trẻ nhỏ <span>(Từ 2 - 4 tuổi)</span>
+                      Trẻ nhỏ <span>(Từ 2 - 5 tuổi)</span>
                     </div>
                     <div className="item-content">
                       <ul style={{ listStyle: "none" }}>
@@ -976,6 +815,14 @@ function Order() {
                 />
               </div>
             </div>
+
+            {/* <div className="booking-item">
+              <h3>Các hình thức thanh toán</h3>
+              <input
+                type="text"
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
+            </div> */}
           </div>
 
           <div className="page-order-right">
@@ -1018,44 +865,29 @@ function Order() {
                     <img src={Calendar} alt="" />
                     <span>Ngày khởi hành: </span>
                     <span>
-                      {moment(selectedTourDetail.dayStart).format("DD-MM-YYYY")}
+                      {format(
+                        parseISO(selectedTourDetail.dayStart),
+                        "dd-MM-yyyy"
+                      )}
                     </span>
                   </div>
                   <div className="row">
                     <img src={Calendar} alt="" />
                     <span>Ngày trở về: </span>
                     <span>
-                      {moment(selectedTourDetail.dayReturn).format(
-                        "DD-MM-YYYY"
+                      {format(
+                        parseISO(selectedTourDetail.dayReturn),
+                        "dd-MM-yyyy"
                       )}
                     </span>
-                  </div>
-                </div>
-                <div className="preview">
-                  <div className="row">
-                    <img src={Concho} alt="" />
-                    <span>Số chỗ còn: </span>
-                    <span>{remainingSlots}</span>
                   </div>
                 </div>
                 <hr />
                 <div className="card-footer">
                   <div className="totalPrice">
-                    <div className="left">Tổng tiền trước giảm giá</div>
+                    <div className="left">Tổng tiền</div>
                     <div className="right">
-                      {originalPrice.toLocaleString("vi-VN")} đ
-                    </div>
-                  </div>
-                  <div className="totalPrice">
-                    <div className="left">Số tiền giảm</div>
-                    <div className="right">
-                      {discountAmount.toLocaleString("vi-VN")} đ
-                    </div>
-                  </div>
-                  <div className="totalPrice">
-                    <div className="left">Tổng tiền sau giảm giá</div>
-                    <div className="right">
-                      {finalPrice.toLocaleString("vi-VN")} đ
+                      {totalPrice.toLocaleString("vi-VN")}
                     </div>
                   </div>
                   <button onClick={handleOrder}>Đặt tour</button>
@@ -1092,4 +924,4 @@ function Order() {
   );
 }
 
-export default Order;
+export default Order1;

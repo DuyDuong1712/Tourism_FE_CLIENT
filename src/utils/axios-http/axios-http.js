@@ -13,6 +13,36 @@ const createAxiosInstance = (baseURL, headers = {}) => {
             ...headers,
         },
     });
+
+    // Thêm interceptor để cập nhật token động
+    instance.interceptors.request.use(
+        async (config) => {
+            const token = localStorage.getItem("accessToken");
+            if (token) {
+                const tokenData = JSON.parse(atob(token.split('.')[1]));
+                const expirationTime = tokenData.exp * 1000;
+                const currentTime = Date.now();
+
+                if (expirationTime - currentTime < 5 * 60 * 1000) {
+                    try {
+                        const response = await axios.post(`${baseURL}/auth/refresh`, { token });
+                        const newToken = response.data.data.token;
+                        localStorage.setItem("accessToken", newToken);
+                        config.headers.Authorization = `Bearer ${newToken}`;
+                    } catch (error) {
+                        console.error('Lỗi khi refresh token:', error);
+                        localStorage.removeItem("accessToken");
+                        window.location.href = '/login';
+                    }
+                } else {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+            }
+            return config;
+        },
+        (error) => Promise.reject(error)
+    );
+
     return instance;
 };
 
@@ -23,7 +53,6 @@ const token = localStorage.getItem('accessToken');
 
 const axiosInstanceUser = createAxiosInstance(baseURL, {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + token
 });
 
 
