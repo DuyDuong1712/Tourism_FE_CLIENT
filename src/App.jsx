@@ -11,6 +11,7 @@ import TourDetails from "./pages/tourDetails";
 import ChangePassword from "./pages/user/change-password";
 import DeleteUser from "./pages/user/delete-user";
 import Order from "./pages/order";
+import PaymentCallback from "./pages/paymentCallback";
 
 function App() {
   const routes = useRoutes([
@@ -53,6 +54,10 @@ function App() {
         {
           path: "/order",
           element: <Order />,
+        },
+        {
+          path: "/payments/payment-callback",
+          element: <PaymentCallback />,
         },
       ],
     },

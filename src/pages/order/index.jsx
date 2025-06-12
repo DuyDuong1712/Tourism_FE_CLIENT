@@ -106,7 +106,7 @@ const PassengerForm = ({ index, type, passenger, onUpdate }) => {
         {type === "Người lớn" && (
           <div className="input-border">
             <label>
-              <span style={{ marginRight: "1rem" }}>Phụ thu phòng đơn</span>
+              <span style={{ marginRight: "1rem" }}>Phòng đơn</span>
               <Switch
                 checked={passenger.singleRoomSupplement}
                 onChange={handleSwitchChange}
@@ -141,7 +141,6 @@ const calculateTotalPrice = (
   total += childQuantity * smallChildrenPrice;
   total += babyQuantity * babyPrice;
 
-  // Chỉ tính phụ thu phòng đơn nếu có hành khách chọn
   const singleRoomAdults = adults.filter(
     (adult) => adult.singleRoomSupplement
   ).length;
@@ -173,7 +172,7 @@ function Order() {
   const [babyQuantity, setBabyQuantity] = useState(0);
   const [singleRoomQuantity, setSingleRoomQuantity] = useState(0);
   const [note, setNote] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod] = useState("VNPAY");
   const [originalPrice, setOriginalPrice] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
@@ -209,77 +208,7 @@ function Order() {
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   // Chỉ cập nhật nếu số lượng thay đổi
-  //   if (
-  //     adults.length !== adultQuantity ||
-  //     children.length !== childrenQuantity ||
-  //     smallChildren.length !== childQuantity ||
-  //     babies.length !== babyQuantity
-  //   ) {
-  //     setAdults((prev) =>
-  //       Array(adultQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) =>
-  //             prev[i] || {
-  //               fullname: "",
-  //               birthDate: null,
-  //               gender: "",
-  //               singleRoomSupplement: false,
-  //             }
-  //         )
-  //     );
-  //     setChildren((prev) =>
-  //       Array(childrenQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //     setSmallChildren((prev) =>
-  //       Array(childQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //     setBabies((prev) =>
-  //       Array(babyQuantity)
-  //         .fill()
-  //         .map(
-  //           (_, i) => prev[i] || { fullname: "", birthDate: null, gender: "" }
-  //         )
-  //     );
-  //   }
-
-  //   // Cập nhật singleRoomQuantity và giá
-  //   const singleRoomCount = adults.filter(
-  //     (adult) => adult.singleRoomSupplement
-  //   ).length;
-  //   setSingleRoomQuantity(singleRoomCount);
-
-  //   const { originalPrice, discountAmount, finalPrice } = calculateTotalPrice(
-  //     selectedTourDetail,
-  //     adultQuantity,
-  //     childrenQuantity,
-  //     childQuantity,
-  //     babyQuantity,
-  //     adults
-  //   );
-  //   setOriginalPrice(originalPrice);
-  //   setDiscountAmount(discountAmount);
-  //   setFinalPrice(finalPrice);
-  // }, [
-  //   adultQuantity,
-  //   childrenQuantity,
-  //   childQuantity,
-  //   babyQuantity,
-  //   selectedTourDetail,
-  // ]);
-
   useEffect(() => {
-    // Chỉ cập nhật nếu số lượng thay đổi
     if (
       adults.length !== adultQuantity ||
       children.length !== childrenQuantity ||
@@ -322,7 +251,6 @@ function Order() {
       );
     }
 
-    // Cập nhật singleRoomQuantity và giá
     const { originalPrice, discountAmount, finalPrice, singleRoomQuantity } =
       calculateTotalPrice(
         selectedTourDetail,
@@ -342,7 +270,7 @@ function Order() {
     childQuantity,
     babyQuantity,
     selectedTourDetail,
-    adults, // Thêm adults vào dependency
+    adults,
   ]);
 
   const updatePassenger = (type, index, data) => {
@@ -440,80 +368,6 @@ function Order() {
     return Math.max(0, remainingSlots - otherTotal);
   };
 
-  // const handleOrder = async () => {
-  //   if (totalPassengers > remainingSlots) {
-  //     message.error(
-  //       `Tổng số hành khách (${totalPassengers}) vượt quá số chỗ còn lại (${remainingSlots})!`
-  //     );
-  //     return;
-  //   }
-
-  //   if (!userTT.fullname || !userTT.phone || !userTT.email || !userTT.address) {
-  //     message.error("Vui lòng điền đầy đủ thông tin liên lạc!");
-  //     return;
-  //   }
-
-  //   const allPassengersValid = [
-  //     ...adults,
-  //     ...children,
-  //     ...smallChildren,
-  //     ...babies,
-  //   ].every(
-  //     (p) =>
-  //       p.fullname &&
-  //       p.gender &&
-  //       (p.birthDate === null ||
-  //         moment(p.birthDate, "YYYY-MM-DD", true).isValid())
-  //   );
-
-  //   if (!allPassengersValid) {
-  //     message.error("Vui lòng điền đầy đủ thông tin hành khách!");
-  //     return;
-  //   }
-
-  //   const formatPassenger = (passenger) => ({
-  //     ...passenger,
-  //     birthDate: passenger.birthDate || null,
-  //   });
-
-  //   const orderData = {
-  //     tourDetailId: selectedTourDetail?.id,
-  //     userId: user?.id,
-  //     fullname: userTT.fullname,
-  //     email: userTT.email,
-  //     phone: userTT.phone,
-  //     address: userTT.address,
-  //     adultQuantity,
-  //     childrenQuantity,
-  //     childQuantity,
-  //     babyQuantity,
-  //     singleRoomSupplementPrice:
-  //       selectedTourDetail?.singleRoomSupplementPrice || 0,
-  //     singleRoomSupplementQuantity: singleRoomQuantity,
-  //     originalPrice,
-  //     discountAmount,
-  //     finalPrice,
-  //     note,
-  //     paymentMethod,
-  //     passengers: [
-  //       ...adults.map(formatPassenger),
-  //       ...children.map(formatPassenger),
-  //       ...smallChildren.map(formatPassenger),
-  //       ...babies.map(formatPassenger),
-  //     ],
-  //   };
-
-  //   try {
-  //     const response = await post("bookings", orderData);
-  //     if (response) {
-  //       message.success("Đặt tour thành công!");
-  //       navigate("/");
-  //     }
-  //   } catch (error) {
-  //     console.error("Lỗi khi đặt tour:", error);
-  //     message.error("Đặt tour thất bại! Vui lòng thử lại");
-  //   }
-  // };
   const handleOrder = async () => {
     if (totalPassengers > remainingSlots) {
       message.error(
@@ -555,8 +409,10 @@ function Order() {
     );
 
     const formatPassenger = (passenger) => ({
-      ...passenger,
+      fullname: passenger.fullname,
       birthDate: passenger.birthDate || null,
+      gender: passenger.gender,
+      singleRoomSupplement: passenger.singleRoomSupplement || false,
     });
 
     const orderData = {
@@ -587,16 +443,50 @@ function Order() {
     };
 
     try {
-      const response = await post("bookings", orderData);
-      if (response) {
-        message.success("Đặt tour thành công!");
-        navigate("/");
+      // Lưu booking tạm thời vào backend
+      const bookingResponse = await post("bookings/pending", orderData);
+
+      const bookingId = bookingResponse;
+
+      // Gửi yêu cầu tạo URL thanh toán
+      const paymentResponse = await post("payments/create_payment", {
+        amount: finalPrice,
+        orderInfo: `Thanh toan don hang:${bookingId}`,
+        language: "vn",
+      });
+
+      console.log(paymentResponse);
+      
+      if (paymentResponse?.status === "OK" && paymentResponse?.url) {
+        // Chuyển hướng đến URL thanh toán
+        window.location.href = paymentResponse.url;
+      } else {
+        message.error("Không thể tạo URL thanh toán. Vui lòng thử lại!");
       }
     } catch (error) {
-      console.error("Lỗi khi đặt tour:", error);
-      message.error("Đặt tour thất bại! Vui lòng thử lại");
+      console.error("Lỗi khi xử lý thanh toán:", error);
+      message.error("Lỗi khi xử lý thanh toán. Vui lòng thử lại!");
     }
   };
+
+  // Xử lý callback từ VNPay
+  // useEffect(() => {
+  //   const handlePaymentCallback = async () => {
+  //     const urlParams = new URLSearchParams(window.location.search);
+  //     const vnp_ResponseCode = urlParams.get("vnp_ResponseCode");
+
+  //     if (vnp_ResponseCode === "00") {
+  //       message.success("Thanh toán thành công!");
+  //       navigate("/");
+  //     } else {
+  //       message.error("Thanh toán không thành công. Vui lòng thử lại!");
+  //     }
+  //   };
+
+  //   if (window.location.search.includes("vnp_ResponseCode")) {
+  //     handlePaymentCallback();
+  //   }
+  // }, [navigate]);
 
   return (
     <div className="order">
@@ -1058,7 +948,7 @@ function Order() {
                       {finalPrice.toLocaleString("vi-VN")} đ
                     </div>
                   </div>
-                  <button onClick={handleOrder}>Đặt tour</button>
+                  <button onClick={handleOrder}>Thanh toán qua VNPay</button>
                 </div>
               </div>
               <div className="tour-contact">

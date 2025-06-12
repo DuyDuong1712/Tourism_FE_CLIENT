@@ -31,12 +31,12 @@ function TourDetails() {
   const [noAvailableTours, setNoAvailableTours] = useState(false); // Thêm trạng thái mới
   const navigate = useNavigate();
   const { token } = theme.useToken();
+  const isLoggedIn = !!localStorage.getItem("accessToken");
 
   const debouncedSetSelectedTourDetail = debounce(setSelectedTourDetail, 300);
 
   const handleBookTour = () => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) {
+    if (!isLoggedIn) {
       message.warning("Vui lòng đăng nhập để đặt tour!");
       navigate("/login");
       return;
@@ -545,7 +545,7 @@ function TourDetails() {
                         disabled={noAvailableTours} // Vô hiệu hóa nút nếu không có tour khả dụng
                         aria-label="Đặt tour"
                       >
-                        Đặt tour
+                        {isLoggedIn ? "Đặt tour" : "Đăng nhập để đặt tour"}
                       </button>
                     </div>
                   </div>
