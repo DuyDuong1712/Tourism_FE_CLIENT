@@ -1,134 +1,180 @@
-import { message } from "antd";
+import { message, Spin } from "antd";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios"; // Giả sử sử dụng axios để gọi API
-import { Spin } from "antd"; // Component loading của Ant Design
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { post } from "../../utils/axios-http/axios-http";
 
 function PaymentCallback() {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(true);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null); // 'success', 'failed', 'pending'
   const [errorMessage, setErrorMessage] = useState("");
+  const [orderInfo, setOrderInfo] = useState(null);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const vnp_ResponseCode = searchParams.get("vnp_ResponseCode"); // Mã phản hồi từ VNPAY
-    const orderIdParam = searchParams.get("vnp_TxnRef"); // Mã đơn hàng
-    const orderId = orderIdParam ? Number(orderIdParam) : 0;
-    const vnp_TransactionNo = searchParams.get("vnp_TransactionNo"); // Mã giao dịch tại VNPAY
-    const vnp_Amount = searchParams.get("vnp_Amount"); // Số tiền thanh toán
+    const processPaymentCallback = async () => {
+      try {
+        // Lấy tham số từ URL
+        const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
+        const bookingId = searchParams
+          .get("vnp_OrderInfo")
+          ?.replace("Thanh toan don hang:", "")
+          .trim();
+        const transactionNo = searchParams.get("vnp_TransactionNo");
+        const amount = searchParams.get("vnp_Amount");
+        const bankCode = searchParams.get("vnp_BankCode");
 
-    // Kiểm tra tính hợp lệ của các tham số
-    if (!vnp_ResponseCode || !orderId) {
-      setErrorMessage("Dữ liệu thanh toán không hợp lệ.");
-      setLoading(false);
-      return;
-    }
+        // Validate các tham số bắt buộc
+        if (!vnp_ResponseCode || !bookingId) {
+          throw new Error("Thông tin thanh toán không hợp lệ");
+        }
 
-    if (vnp_ResponseCode === "00") {
-      // Thanh toán thành công
-      handlePaymentSuccess(orderId, vnp_TransactionNo, vnp_Amount);
-    } else {
-      // Thanh toán thất bại
-      handlePaymentFailure(vnp_ResponseCode);
-    }
-  }, [location.search]);
+        setOrderInfo({
+          bookingId,
+          transactionNo,
+          amount: amount ? parseInt(amount) / 100 : 0,
+          bankCode,
+        });
 
-  const handlePaymentSuccess = async (orderId, transactionNo, amount) => {
+        if (vnp_ResponseCode === "00") {
+          // Thanh toán thành công
+          await handlePaymentSuccess(bookingId, transactionNo, amount);
+          setPaymentStatus("success");
+          message.success("Thanh toán thành công!");
+        } else {
+          // Thanh toán thất bại
+          handlePaymentFailure(vnp_ResponseCode);
+          setPaymentStatus("failed");
+        }
+      } catch (error) {
+        console.error("Lỗi xử lý thanh toán:", error);
+        setPaymentStatus("failed");
+        setErrorMessage(error.message || "Đã xảy ra lỗi khi xử lý thanh toán");
+        message.error(error.message || "Đã xảy ra lỗi khi xử lý thanh toán");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    processPaymentCallback();
+  }, [searchParams]);
+
+  const handlePaymentSuccess = async (bookingId, transactionNo, amount) => {
     try {
-      // Gọi API để cập nhật trạng thái đơn hàng
-      const response = await axios.post("/api/orders/update-status", {
-        orderId,
-        status: "PAID",
+      // Gọi API cập nhật trạng thái booking
+      const response = await post("bookings/update-payment-status", {
+        bookingId,
+        status: "SUCCESS",
         transactionNo,
-        amount: Number(amount) / 100, // VNPAY trả về số tiền nhân 100
+        amount: amount ? parseInt(amount) / 100 : 0, // VNPay trả về số tiền nhân 100
+        paymentMethod: "VNPAY",
       });
 
-      if (response.status === 200) {
-        setPaymentSuccess(true);
-        message.success("Thanh toán thành công! Đơn hàng đã được cập nhật.");
-        console.log(
-          "Thanh toán thành công, orderId:",
-          orderId,
-          "transactionNo:",
-          transactionNo
-        );
-
-        // Chuyển hướng sau 3 giây
-        setTimeout(() => {
-          navigate(`/order-success?orderId=${orderId}`);
-        }, 3000);
-      } else {
-        throw new Error("Cập nhật đơn hàng thất bại.");
+      if (!response.data) {
+        throw new Error("Cập nhật trạng thái thanh toán thất bại");
       }
+
+      // Chuyển hướng sau 3 giây
+      setTimeout(() => {
+        navigate(`/order-success/${bookingId}`, {
+          state: {
+            bookingId,
+            transactionNo,
+            amount: amount ? parseInt(amount) / 100 : 0,
+          },
+        });
+      }, 3000);
     } catch (error) {
-      console.error("Lỗi khi cập nhật đơn hàng:", error);
-      setErrorMessage(
-        "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng liên hệ hỗ trợ."
-      );
-      setPaymentSuccess(false);
-    } finally {
-      setLoading(false);
+      console.error("Lỗi khi cập nhật trạng thái booking:", error);
+      throw error;
     }
   };
 
   const handlePaymentFailure = (responseCode) => {
-    setPaymentSuccess(false);
-    setLoading(false);
+    let errorMsg = "Thanh toán thất bại";
 
-    // Xử lý các mã lỗi cụ thể từ VNPAY
-    let errorMsg = "Thanh toán thất bại.";
-    switch (responseCode) {
-      case "24":
-        errorMsg = "Giao dịch bị hủy bởi người dùng.";
-        break;
-      case "13":
-        errorMsg = "Giao dịch không thành công do thông tin thẻ không hợp lệ.";
-        break;
-      case "07":
-        errorMsg = "Giao dịch bị nghi ngờ gian lận.";
-        break;
-      default:
-        errorMsg = `Thanh toán thất bại. Mã lỗi: ${responseCode}.`;
-    }
+    // Xử lý các mã lỗi cụ thể từ VNPay
+    const errorMap = {
+      "07": "Giao dịch bị nghi ngờ gian lận",
+      "09": "Thẻ/Tài khoản chưa đăng ký dịch vụ Internet Banking",
+      10: "Xác thực thông tin thẻ/tài khoản không đúng quá 3 lần",
+      11: "Đã hết hạn chờ thanh toán. Xin quý khách thực hiện lại giao dịch",
+      12: "Thẻ/Tài khoản bị khóa",
+      13: "Sai mã xác thực (OTP)",
+      24: "Khách hàng hủy giao dịch",
+      51: "Tài khoản không đủ số dư",
+      65: "Tài khoản đã vượt quá hạn mức giao dịch trong ngày",
+      75: "Ngân hàng thanh toán đang bảo trì",
+      79: "Khách hàng nhập sai mật khẩu thanh toán quá số lần quy định",
+      99: "Các lỗi khác",
+    };
 
-    message.error(errorMsg);
+    errorMsg =
+      errorMap[responseCode] || `Thanh toán thất bại (Mã lỗi: ${responseCode})`;
     setErrorMessage(errorMsg);
-    console.log("Thanh toán thất bại, mã lỗi:", responseCode);
+    message.error(errorMsg);
 
-    // Chuyển hướng về trang lỗi sau 3 giây
+    // Chuyển hướng sau 3 giây
     setTimeout(() => {
-      navigate("/order-failure");
+      navigate(`/booking-failed`, {
+        state: {
+          errorCode: responseCode,
+          errorMessage: errorMsg,
+          ...(orderInfo || {}),
+        },
+      });
     }, 3000);
   };
 
-  return (
-    <div style={{ textAlign: "center", padding: "50px" }}>
-      {loading ? (
+  const renderContent = () => {
+    if (loading) {
+      return (
         <div>
           <Spin size="large" />
-          <p style={{ marginTop: "20px" }}>
-            Đang xử lý thanh toán, vui lòng chờ...
-          </p>
+          <p style={{ marginTop: "20px" }}>Đang xử lý kết quả thanh toán...</p>
         </div>
-      ) : paymentSuccess ? (
+      );
+    }
+
+    if (paymentStatus === "success") {
+      return (
         <div>
           <h2 style={{ color: "#52c41a" }}>Thanh toán thành công!</h2>
-          <p>Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đang được xử lý.</p>
-          <p>Chuyển hướng về trang chủ sau vài giây...</p>
+          <p>Mã đơn hàng: {orderInfo?.bookingId}</p>
+          <p>Số tiền: {orderInfo?.amount?.toLocaleString()} VND</p>
+          <p>Bạn sẽ được chuyển hướng về trang xác nhận...</p>
         </div>
-      ) : (
-        <div>
-          <h2 style={{ color: "#ff4d4f" }}>Thanh toán thất bại!</h2>
-          <p>
-            {errorMessage ||
-              "Đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử lại."}
-          </p>
-          <p>Chuyển hướng về trang lỗi sau vài giây...</p>
-        </div>
-      )}
+      );
+    }
+
+    return (
+      <div>
+        <h2 style={{ color: "#ff4d4f" }}>Thanh toán không thành công</h2>
+        <p>{errorMessage}</p>
+        <p>Bạn sẽ được chuyển hướng về trang thông báo lỗi...</p>
+        <button
+          onClick={() => navigate("/")}
+          style={{ marginTop: 20, padding: "8px 16px" }}
+        >
+          Về trang chủ
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "50px auto",
+        padding: 20,
+        textAlign: "center",
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      }}
+    >
+      {renderContent()}
     </div>
   );
 }
