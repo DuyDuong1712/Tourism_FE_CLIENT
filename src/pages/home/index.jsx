@@ -57,16 +57,21 @@ function Home() {
       setDestination([]);
     }
   }, 300);
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await get("tours/feature");
-      setTourFeature(response);
+      const response = await get("tours/featured");
+      setTourFeature(response.data);
     };
     fetchData();
   }, []);
 
   const handleClickDestination = (slug) => {
     navigate(`/tours/${slug}`);
+  };
+
+  const handleNavigateCategory = (categoryId) => {
+    navigate(`/tours/du-lich?categoryId=${categoryId}`);
   };
 
   const handleSearch = () => {
@@ -312,7 +317,7 @@ function Home() {
         <div className="select-tour-container">
           <div className="select-tour-button">
             <div className="stb-list">
-              <button onClick={() => handleNavigate("du-lich-cao-cap")}>
+              <button onClick={() => handleNavigateCategory(1)}>
                 <img src={Dimond} alt="" />
               </button>
               <p>
@@ -321,7 +326,7 @@ function Home() {
               </p>
             </div>
             <div className="stb-list">
-              <button onClick={() => handleNavigate("du-lich-tieu-chuan")}>
+              <button onClick={() => handleNavigateCategory(2)}>
                 <img src={TieuChuan} alt="" />
               </button>
               <p>
@@ -330,7 +335,7 @@ function Home() {
               </p>
             </div>
             <div className="stb-list">
-              <button onClick={() => handleNavigate("du-lich-tiet-kiem")}>
+              <button onClick={() => handleNavigateCategory(3)}>
                 <img src={TietKiem} alt="" />
               </button>
               <p>
@@ -339,7 +344,7 @@ function Home() {
               </p>
             </div>
             <div className="stb-list">
-              <button onClick={() => handleNavigate("du-lich-gia-tot")}>
+              <button onClick={() => handleNavigateCategory(4)}>
                 <img src={GiaTot} alt="" />
               </button>
               <p>
@@ -373,195 +378,46 @@ function Home() {
           <div className="tour-feature-content">
             <div className="tour-feature-track">
               <ul className="tour-feature-list">
-                <li>
-                  <div className="tour-card">
-                    <div className="background">
-                      <img
-                        src={tourFeature?.tours?.[1]?.images?.[1]?.source}
-                        alt=""
-                        onClick={() =>
-                          navigate(
-                            `/tour-details/${tourFeature?.tours?.[1]?.slug}`
-                          )
-                        }
-                      />
-                      <div className="tour-card-large"></div>
-                    </div>
-                    <div className="content">
-                      <div className="preview">
-                        <div className="preview-content">
-                          <p className="line-clamp">
-                            {tourFeature?.tours?.[1]?.title}
-                          </p>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Vitri} alt="" />
-                              <p>Khởi hành: </p>
+                {tourFeature?.map((tour, index) => (
+                  <li key={index}>
+                    <div className="tour-card">
+                      <div className="background">
+                        <img
+                          src={tour.tourImages?.[1] || "default-image.jpg"}
+                          alt={tour.title}
+                        />
+                        <div className="tour-card-large"></div>
+                      </div>
+                      <div className="content">
+                        <div className="preview">
+                          <div className="preview-content">
+                            <p className="line-clamp">{tour.title}</p>
+                            <div className="tour-info">
+                              <p>
+                                <strong>Khởi hành:</strong> {tour.departure}
+                              </p>
+                              <p>
+                                <strong>Điểm đến:</strong> {tour.destination}
+                              </p>
+                              <p>
+                                <strong>Phương tiện:</strong>{" "}
+                                {tour.transportation}
+                              </p>
                             </div>
-                            <span>
-                              {tourFeature?.tours?.[1]?.departure?.title}
-                            </span>
-                          </div>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Code} alt="" />
-                              <p>Mã chương trình: </p>
+                            <div className="tour-promotion">
+                              <button
+                                className="tour-detail-button"
+                                onClick={() => handleNavigate(tour.id)}
+                              >
+                                Xem chi tiết
+                              </button>
                             </div>
-                            <span>{tourFeature?.tours?.[1]?.code}</span>
-                          </div>
-                        </div>
-                        <div className="preview-pric">
-                          <div className="price">
-                            <div className="price-oldPrice">
-                              <p>Giá từ</p>
-                            </div>
-                            <div className="price-newPrice">
-                              <span>13.390.000đ</span>
-                            </div>
-                          </div>
-                          <div className="button">
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/tour-details/${tourFeature?.tours?.[1]?.slug}`
-                                )
-                              }
-                            >
-                              Xem chi tiết
-                              <i className="fa-solid fa-arrow-right"></i>
-                            </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-                <li>
-                  <div className="tour-card">
-                    <div className="background">
-                      <img
-                        src={tourFeature?.tours?.[2]?.images?.[1]?.source}
-                        alt=""
-                        onClick={() =>
-                          navigate(
-                            `/tour-details/${tourFeature?.tours?.[2]?.slug}`
-                          )
-                        }
-                      />
-                      <div className="tour-card-large"></div>
-                    </div>
-                    <div className="content">
-                      <div className="preview">
-                        <div className="preview-content">
-                          <p className="line-clamp">
-                            {tourFeature?.tours?.[2]?.title}
-                          </p>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Vitri} alt="" />
-                              <p>Khởi hành: </p>
-                            </div>
-                            <span>
-                              {tourFeature?.tours?.[2]?.departure?.title}
-                            </span>
-                          </div>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Code} alt="" />
-                              <p>Mã chương trình: </p>
-                            </div>
-                            <span>{tourFeature?.tours?.[2]?.code}</span>
-                          </div>
-                        </div>
-                        <div className="preview-pric">
-                          <div className="price">
-                            <div className="price-oldPrice">
-                              <p>Giá từ</p>
-                            </div>
-                            <div className="price-newPrice">
-                              <span>12.230.000đ</span>
-                            </div>
-                          </div>
-                          <div className="button">
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/tour-details/${tourFeature?.tours?.[2]?.slug}`
-                                )
-                              }
-                            >
-                              Xem chi tiết
-                              <i className="fa-solid fa-arrow-right"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div className="tour-card">
-                    <div className="background">
-                      <img
-                        src={tourFeature?.tours?.[3]?.images?.[1]?.source}
-                        alt=""
-                        onClick={() =>
-                          navigate(
-                            `/tour-details/${tourFeature?.tours?.[3]?.slug}`
-                          )
-                        }
-                      />
-                      <div className="tour-card-large"></div>
-                    </div>
-                    <div className="content">
-                      <div className="preview">
-                        <div className="preview-content">
-                          <p className="line-clamp">
-                            {tourFeature?.tours?.[3]?.title}
-                          </p>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Vitri} alt="" />
-                              <p>Khởi hành: </p>
-                            </div>
-                            <span>
-                              {tourFeature?.tours?.[3]?.departure?.title}
-                            </span>
-                          </div>
-                          <div className="tour-promotion">
-                            <div className="text">
-                              <img src={Code} alt="" />
-                              <p>Mã chương trình: </p>
-                            </div>
-                            <span>{tourFeature?.tours?.[3]?.code}</span>
-                          </div>
-                        </div>
-                        <div className="preview-pric">
-                          <div className="price">
-                            <div className="price-oldPrice">
-                              <p>Giá từ</p>
-                            </div>
-                            <div className="price-newPrice">
-                              <span>200.000đ</span>
-                            </div>
-                          </div>
-                          <div className="button">
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/tour-details/${tourFeature?.tours?.[3]?.slug}`
-                                )
-                              }
-                            >
-                              Xem chi tiết
-                              <i className="fa-solid fa-arrow-right"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
