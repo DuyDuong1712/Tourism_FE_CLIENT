@@ -4,8 +4,6 @@ import moment from "moment";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Banner from "../../assets/images/sl_250506_he-2025.png";
-import Oto from "../../assets/images/oto.png";
-import TourTet from "../../assets/images/tourtTet.png";
 import Dimond from "../../assets/images/dimond.png";
 import TieuChuan from "../../assets/images/tieuchuan.png";
 import TietKiem from "../../assets/images/tietkiem.png";
@@ -15,11 +13,14 @@ import Slider2 from "../../assets/images/bn_250603_artboard-1-copy.png";
 import Slider3 from "../../assets/images/bn_250605_banner-pushbantourtram.png";
 import Slider4 from "../../assets/images/bn_250603_artboard-1.png";
 import Slider5 from "../../assets/images/slider5.png";
-import Vitri from "../../assets/images/vitri.png";
 import Code from "../../assets/images/code.png";
+import Vitri from "../../assets/images/vitri.png";
+import Time from "../../assets/images/time.png";
+import Flight from "../../assets/images/flight.png";
+import Celanda from "../../assets/images/celanda.png";
 import "./style.scss";
 import { useNavigate } from "react-router-dom";
-import { Calendar, theme } from "antd";
+import { Button, Calendar, Card, List, theme } from "antd";
 import { get } from "../../utils/axios-http/axios-http";
 import { debounce } from "lodash";
 
@@ -375,7 +376,8 @@ function Home() {
               theo cách hoàn hảo nhất.
             </h2>
           </div>
-          <div className="tour-feature-content">
+
+          {/* <div className="tour-feature-content">
             <div className="tour-feature-track">
               <ul className="tour-feature-list">
                 {tourFeature?.map((tour, index) => (
@@ -419,6 +421,59 @@ function Home() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div> */}
+
+          <div className="tour-feature-content">
+            <div className="tour-feature-track">
+              <List
+                grid={{ gutter: 16, column: 3 }} // Bố cục lưới: 3 cột, khoảng cách 16px
+                dataSource={tourFeature}
+                renderItem={(tour) => (
+                  <List.Item>
+                    <Card
+                      hoverable
+                      cover={
+                        <img
+                          alt={tour.title}
+                          src={tour.tourImages}
+                          style={{ height: "200px", objectFit: "cover" }}
+                        />
+                      }
+                      actions={[
+                        <Button
+                          key="book"
+                          type="primary"
+                          onClick={() =>
+                            navigate(`/tour-details/${tour.id}/${tour.title}`)
+                          }
+                        >
+                          Đặt ngay
+                        </Button>,
+                      ]}
+                    >
+                      <Card.Meta
+                        title={tour.title}
+                        description={
+                          <>
+                            <p>Khởi hành: {tour.departure}</p>
+                            <p>Điểm đến: {tour.destination}</p>
+                            <p>Phương tiện: {tour.transportation}</p>
+                            <p>
+                              {tour.duration == 0
+                                ? `1N`
+                                : `${tour.duration}N${tour.duration - 1}Đ`}
+                            </p>
+                            <p style={{ fontWeight: "bold", color: "#f50" }}>
+                              Giá từ: {tour.price.toLocaleString("vi-VN")} đ
+                            </p>
+                          </>
+                        }
+                      />
+                    </Card>
+                  </List.Item>
+                )}
+              />
             </div>
           </div>
         </div>
