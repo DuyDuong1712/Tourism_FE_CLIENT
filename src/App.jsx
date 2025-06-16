@@ -13,6 +13,7 @@ import DeleteUser from "./pages/user/delete-user";
 import Order from "./pages/order";
 import PaymentCallback from "./pages/paymentCallback";
 import OrderSuccess from "./pages/order/orderSuccess";
+import UserOrder from "./pages/user/user-order";
 
 function App() {
   const routes = useRoutes([
@@ -41,6 +42,10 @@ function App() {
           element: <User />,
         },
         {
+          path: "/user/user-order",
+          element: <UserOrder />,
+        },
+        {
           path: "/user/change-password",
           element: <ChangePassword />,
         },
@@ -60,6 +65,7 @@ function App() {
           path: "/order-success/:bookingId",
           element: <OrderSuccess />,
         },
+
         {
           path: "/payments/payment-callback",
           element: <PaymentCallback />,

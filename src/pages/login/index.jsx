@@ -92,7 +92,7 @@ function Login() {
           </Form.Item>
 
           {/* Nút đăng nhập bằng Google */}
-          <div style={{ textAlign: "center", marginTop: 16 }}>
+          {/* <div style={{ textAlign: "center", marginTop: 16 }}>
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
                 try {
@@ -116,7 +116,7 @@ function Login() {
                 message.error("Đăng nhập Google thất bại!");
               }}
             />
-          </div>
+          </div> */}
         </Form>
       </div>
     </div>

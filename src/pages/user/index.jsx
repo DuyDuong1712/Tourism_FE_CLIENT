@@ -166,6 +166,16 @@ function User() {
                   </div>
                 </div>
                 <div className="user-list">
+                  <button
+                    className="active-sidebar"
+                    onClick={() => {
+                      navigate("/user/user-order");
+                    }}
+                  >
+                    <i className="fa-solid fa-list"></i> Đơn đặt tour
+                  </button>
+                </div>
+                <div className="user-list">
                   <button className="active-sidebar">
                     <i className="fa-solid fa-heart"></i> Yêu thích đã lưu
                   </button>
