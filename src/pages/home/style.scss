@@ -350,6 +350,31 @@
         align-items: center;
         width: 100%;
 
+        .tour-feature-track {
+          width: 100%;
+
+          .slick-slider {
+            width: 100%;
+
+            .slick-list {
+              width: 100%;
+
+              .slick-track {
+                display: flex !important;
+
+                .slick-slide {
+                  padding: 0 8px;
+
+                  > div {
+                    display: flex;
+                    justify-content: center;
+                  }
+                }
+              }
+            }
+          }
+        }
+
         .tour-feature-list {
           display: flex;
           align-items: center;
@@ -554,5 +579,3 @@
     }
   }
 }
-
-
