@@ -11,18 +11,20 @@ function UserOrder() {
   const [statusFilter, setStatusFilter] = useState("");
   const [userId, setUserId] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const navigate = useNavigate();
 
-  // Lấy userId từ localStorage hoặc API
+  // Lấy thông tin
   const fetchUserProfile = async () => {
     try {
       const response = await getUser("users/profile");
       const user = response.data;
       setUserId(user.id);
-      localStorage.setItem("userId", user.id);
       return user.id;
     } catch (error) {
       message.error("Lỗi khi lấy thông tin người dùng!");
+      console.error("Fetch user profile error:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("userId");
@@ -38,19 +40,24 @@ function UserOrder() {
     setLoading(true);
     try {
       const response = await get(
-        `users/${userId}/bookings${
+        `bookings/users/${userId}${
           statusFilter ? `?status=${statusFilter}` : ""
         }`
       );
       const bookings = Array.isArray(response.data)
         ? response.data
-        : response.data.bookings || [];
+        : response.data?.bookings && Array.isArray(response.data.bookings)
+        ? response.data.bookings
+        : [];
       setBookingData(bookings);
       if (bookings.length === 0) {
         message.info("Bạn chưa có booking tour nào!");
       }
     } catch (error) {
-      message.error("Lỗi khi lấy danh sách booking!");
+      message.error(
+        error.response?.data?.message || "Lỗi khi lấy danh sách booking!"
+      );
+      console.error("Fetch bookings error:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("userId");
@@ -61,12 +68,20 @@ function UserOrder() {
     }
   };
 
-  // Tính toán chính sách hủy dựa trên ngày khởi hành (chỉ áp dụng cho CONFIRMED)
+  // Tính toán chính sách hủy
   const getCancellationPolicy = (startDate, totalAmount) => {
     const today = new Date();
     const start = new Date(startDate);
+    if (isNaN(start.getTime())) {
+      return {
+        daysLeft: 0,
+        penaltyPercentage: 100,
+        penaltyAmount: totalAmount,
+        refundAmount: 0,
+      };
+    }
     const diffTime = start - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Số ngày còn lại
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     let penaltyPercentage = 0;
     let penaltyAmount = 0;
@@ -77,7 +92,7 @@ function UserOrder() {
     } else if (diffDays < 15) {
       penaltyPercentage = 40;
       penaltyAmount = totalAmount * 0.4;
-    } else if (diffDays < 30) {
+    } else {
       penaltyPercentage = 20;
       penaltyAmount = totalAmount * 0.2;
     }
@@ -90,25 +105,81 @@ function UserOrder() {
     };
   };
 
-  // Xử lý hủy booking
-  const handleCancelBooking = (record) => {
-    const isConfirmed = record.bookingStatus === "CONFIRMED";
-    let content;
-    let payload = {};
+  // Mở modal hủy booking
+  const showCancelModal = (record) => {
+    setSelectedRecord(record);
+    setCancelReason(""); // Reset lý do hủy
+    setIsModalVisible(true);
+  };
+
+  // Đóng modal
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setSelectedRecord(null);
+    setCancelReason("");
+  };
+
+  // Xác nhận hủy booking
+  const handleConfirmCancel = async () => {
+    if (!selectedRecord) return;
+
+    // const isConfirmed = selectedRecord.bookingStatus === "CONFIRMED";
+    // let payload = {};
+
+    // if (isConfirmed) {
+    //   const { penaltyAmount, refundAmount } = getCancellationPolicy(
+    //     selectedRecord.startDate,
+    //     selectedRecord.totalAmount
+    //   );
+    //   payload = { penaltyAmount, refundAmount, cancelReason };
+    // } else {
+    //   payload = {
+    //     penaltyAmount: 0,
+    //     refundAmount: selectedRecord.totalAmount,
+    //     cancelReason,
+    //   };
+    // }
+
+    let payload = {
+      cancelReason,
+    };
+
+    try {
+      setLoading(true);
+      await patch(`bookings/${selectedRecord.id}/cancel`, payload);
+      message.success("Hủy tour thành công!");
+      handleModalCancel();
+      if (userId) await fetchBookings(userId);
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || error.message || "Lỗi khi hủy tour!"
+      );
+      console.error("Cancel booking error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Render nội dung modal
+  const renderModalContent = () => {
+    if (!selectedRecord) return null;
+
+    const isConfirmed = selectedRecord.bookingStatus === "CONFIRMED";
 
     if (isConfirmed) {
-      const { daysLeft, penaltyPercentage, penaltyAmount, refundAmount } =
-        getCancellationPolicy(record.startDate, record.totalAmount);
-      payload = { penaltyAmount, refundAmount, cancelReason };
+      const { daysLeft, penaltyAmount, refundAmount } = getCancellationPolicy(
+        selectedRecord.startDate,
+        selectedRecord.totalAmount
+      );
 
-      content = (
+      return (
         <div>
           <p>
-            <strong>Tên tour:</strong> {record.tourName}
+            <strong>Tên tour:</strong> {selectedRecord.tourName}
           </p>
           <p>
             <strong>Ngày khởi hành:</strong>{" "}
-            {new Date(record.startDate).toLocaleDateString()}
+            {new Date(selectedRecord.startDate).toLocaleDateString()}
           </p>
           <p>
             <strong>Số ngày còn lại:</strong> {daysLeft} ngày
@@ -135,19 +206,10 @@ function UserOrder() {
                 })}
               </li>
             )}
-            {daysLeft >= 15 && daysLeft < 30 && (
+            {daysLeft >= 15 && (
               <li>
                 Mất 20% tiền:{" "}
                 {penaltyAmount.toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })}
-              </li>
-            )}
-            {daysLeft >= 30 && (
-              <li>
-                Hoàn tiền 100%:{" "}
-                {refundAmount.toLocaleString("vi-VN", {
                   style: "currency",
                   currency: "VND",
                 })}
@@ -173,20 +235,14 @@ function UserOrder() {
         </div>
       );
     } else {
-      // PENDING: Hủy miễn phí
-      payload = {
-        penaltyAmount: 0,
-        refundAmount: record.totalAmount,
-        cancelReason,
-      };
-      content = (
+      return (
         <div>
           <p>
-            <strong>Tên tour:</strong> {record.tourName}
+            <strong>Tên tour:</strong> {selectedRecord.tourName}
           </p>
           <p>
             <strong>Ngày khởi hành:</strong>{" "}
-            {new Date(record.startDate).toLocaleDateString()}
+            {new Date(selectedRecord.startDate).toLocaleDateString()}
           </p>
           <p>
             <strong>Lý do hủy:</strong>
@@ -200,39 +256,12 @@ function UserOrder() {
         </div>
       );
     }
-
-    Modal.confirm({
-      title: "Xác nhận hủy tour",
-      content,
-      okText: "Hủy Tour",
-      cancelText: "Quay lại",
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          setLoading(true);
-          await patch(`bookings/${record.id}/cancel`, payload);
-          message.success("Hủy tour thành công!");
-          if (userId) await fetchBookings(userId);
-        } catch (error) {
-          message.error(error.response?.data || "Lỗi khi hủy tour!");
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
   };
 
   // Gọi API khi component mount hoặc statusFilter thay đổi
   useEffect(() => {
     const getData = async () => {
-      let currentUserId = localStorage.getItem("userId");
-
-      if (!currentUserId) {
-        currentUserId = await fetchUserProfile();
-      } else {
-        setUserId(currentUserId);
-      }
-
+      let currentUserId = await fetchUserProfile();
       if (currentUserId) {
         await fetchBookings(currentUserId);
       } else {
@@ -240,9 +269,7 @@ function UserOrder() {
         navigate("/login");
       }
     };
-
-    const debounceFetch = setTimeout(getData, 300);
-    return () => clearTimeout(debounceFetch);
+    getData();
   }, [statusFilter, navigate]);
 
   // Cấu hình cột cho bảng
@@ -291,6 +318,10 @@ function UserOrder() {
         let displayText = status;
 
         switch (status) {
+          case "PENDING":
+            color = "orange";
+            displayText = "Đang chờ";
+            break;
           case "CONFIRMED":
             color = "green";
             displayText = "Đã xác nhận";
@@ -304,8 +335,8 @@ function UserOrder() {
             displayText = "Đã hoàn thành";
             break;
           default:
-            color = "orange";
-            displayText = "Đang chờ";
+            color = "grey";
+            displayText = "Không xác định";
             break;
         }
         return <Tag color={color}>{displayText}</Tag>;
@@ -354,9 +385,10 @@ function UserOrder() {
       render: (_, record) => (
         <Space size="middle">
           {(record.bookingStatus === "PENDING" ||
-            record.bookingStatus === "CONFIRMED") && (
+            (record.bookingStatus === "CONFIRMED" &&
+              new Date(record.startDate) > new Date())) && (
             <Button
-              onClick={() => handleCancelBooking(record)}
+              onClick={() => showCancelModal(record)}
               type="default"
               icon={<DeleteOutlined />}
               style={{ marginLeft: 1 }}
@@ -381,10 +413,14 @@ function UserOrder() {
 
   return (
     <div className="layout-container">
-      <h2 style={{ marginTop: 20, marginBottom: 100 }}>
-        Danh sách đơn hàng
-      </h2>
-
+      <h2 style={{ marginTop: 20, marginBottom: 20 }}>Danh sách đơn hàng</h2>
+      <Select
+        style={{ width: 200, marginBottom: 20 }}
+        value={statusFilter}
+        onChange={(value) => setStatusFilter(value)}
+        options={statusOptions}
+        placeholder="Chọn trạng thái"
+      />
       <Table
         dataSource={bookingData || []}
         columns={columns}
@@ -393,7 +429,39 @@ function UserOrder() {
         pagination={{ pageSize: 12 }}
         className="table-container"
         style={{ cursor: "pointer" }}
+        locale={{ emptyText: "Bạn chưa có booking tour nào!" }}
       />
+
+      {/* Modal hủy booking */}
+      <Modal
+        title="Xác nhận hủy tour"
+        visible={isModalVisible}
+        onOk={handleConfirmCancel}
+        onCancel={handleModalCancel}
+        okText="Hủy Tour"
+        cancelText="Quay lại"
+        okButtonProps={{ danger: true }}
+        confirmLoading={loading}
+      >
+        {renderModalContent()}
+      </Modal>
+
+      <div>
+        {/* Link quay lại */}
+        <div style={{ marginTop: 24, textAlign: "left" }}>
+          <Button
+            type="link"
+            style={{
+              padding: 0,
+              fontSize: "14px",
+              color: "#1890ff",
+            }}
+            onClick={() => navigate(-1)}
+          >
+            « Quay lại
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

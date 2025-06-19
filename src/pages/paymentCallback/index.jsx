@@ -90,7 +90,7 @@ function PaymentCallback() {
     }
   };
 
-  const handlePaymentFailure = (responseCode) => {
+  const handlePaymentFailure = async (responseCode) => {
     let errorMsg = "Thanh toán thất bại";
 
     // Xử lý các mã lỗi cụ thể từ VNPay
@@ -109,14 +109,26 @@ function PaymentCallback() {
       99: "Các lỗi khác",
     };
 
-    errorMsg =
-      errorMap[responseCode] || `Thanh toán thất bại (Mã lỗi: ${responseCode})`;
-    setErrorMessage(errorMsg);
-    message.error(errorMsg);
+    try {
+      if (orderInfo?.bookingId) {
+        // Gửi trạng thái thất bại về backend
+        await post("bookings/update-payment-status", {
+          bookingId: orderInfo.bookingId,
+          status: "FAILED",
+          transactionNo: orderInfo.transactionNo || null,
+          amount: orderInfo.amount || 0,
+          paymentMethod: "VNPAY",
+          errorCode: responseCode,
+          errorMessage: errorMsg,
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái thất bại:", error);
+    }
 
     // Chuyển hướng sau 3 giây
     setTimeout(() => {
-      navigate(`/booking-failed`, {
+      navigate(`/`, {
         state: {
           errorCode: responseCode,
           errorMessage: errorMsg,

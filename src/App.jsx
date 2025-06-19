@@ -14,6 +14,7 @@ import Order from "./pages/order";
 import PaymentCallback from "./pages/paymentCallback";
 import OrderSuccess from "./pages/order/orderSuccess";
 import UserOrder from "./pages/user/user-order";
+import UserFavorite from "./pages/user/user-favorite";
 
 function App() {
   const routes = useRoutes([
@@ -44,6 +45,10 @@ function App() {
         {
           path: "/user/user-order",
           element: <UserOrder />,
+        },
+        {
+          path: "/user/favorite-tour",
+          element: <UserFavorite />,
         },
         {
           path: "/user/change-password",

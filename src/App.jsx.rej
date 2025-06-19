@@ -1,0 +1,12 @@
+diff a/src/App.jsx b/src/App.jsx	(rejected hunks)
+@@ -56,6 +56,10 @@
+           path: "/order",
+           element: <Order />,
+         },
++        {
++          path: "/order-success/:bookingId",
++          element: <OrderSuccess />,
++        },
+         {
+           path: "/payments/payment-callback",
+           element: <PaymentCallback />,

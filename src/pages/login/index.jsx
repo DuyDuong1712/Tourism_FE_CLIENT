@@ -23,8 +23,9 @@ function Login() {
       // console.log(responseUser.user);
 
       if (response) {
+        const responseUser = await getUser("users/profile");
+        dispatch(loginReducer(responseUser.data));
         message.success("Đăng nhập thành công");
-        // dispatch(loginReducer(responseUser.user));
         navigate("/");
       } else {
         message.error(response?.message || "Đăng nhập thất bại!");

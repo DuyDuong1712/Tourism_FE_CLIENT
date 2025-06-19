@@ -11,13 +11,14 @@ import Time from "../../assets/images/time.png";
 import Flight from "../../assets/images/flight.png";
 import Celanda from "../../assets/images/celanda.png";
 import "./style.scss";
-import { get } from "../../utils/axios-http/axios-http";
+import { get, post, deleteMethod } from "../../utils/axios-http/axios-http";
 import { message, Select, Calendar, theme } from "antd";
+import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import getChildren from "../../utils/getChildrenDestination";
 import moment from "moment";
-import { i } from "framer-motion/client";
 
 const { Option } = Select;
+
 function Tour() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -33,6 +34,9 @@ function Tour() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTransportation, setSelectedTransportation] = useState(null);
   const [selectedDeparture, setSelectedDeparture] = useState(null);
+  const [favoriteTours, setFavoriteTours] = useState(new Set());
+  const [loadingFavorites, setLoadingFavorites] = useState({});
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
 
   // Hàm xây dựng cây từ danh sách phẳng
@@ -53,6 +57,73 @@ function Tour() {
     });
 
     return tree;
+  };
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem("accessToken");
+    return !!token;
+  };
+
+  // Fetch danh sách yêu thích của user (chỉ khi đã đăng nhập)
+  const fetchFavorites = async () => {
+    try {
+      const response = await get("favorites");
+      const favoriteIds = response.data.map((item) => item.tourId);
+      setFavoriteTours(new Set(favoriteIds));
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách yêu thích:", error);
+      // Nếu lỗi 401 (Unauthorized), có thể đặt lại trạng thái đăng nhập
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        setFavoriteTours(new Set());
+      }
+    }
+  };
+
+  // Xử lý thêm/xóa yêu thích
+  const handleToggleFavorite = async (tourId, e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện click vào card
+
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    if (!isAuthenticated) {
+      message.warning("Vui lòng đăng nhập để sử dụng tính năng");
+      // Redirect đến trang đăng nhập
+      navigate("/login");
+      return;
+    }
+
+    setLoadingFavorites((prev) => ({ ...prev, [tourId]: true }));
+
+    try {
+      const isFavorite = favoriteTours.has(tourId);
+
+      if (isFavorite) {
+        // Xóa khỏi yêu thích
+        await deleteMethod(`favorites`, { tourId });
+        setFavoriteTours((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(tourId);
+          return newSet;
+        });
+        message.success("Đã xóa khỏi danh sách yêu thích");
+      } else {
+        // Thêm vào yêu thích
+        await post("favorites", { tourId });
+        setFavoriteTours((prev) => new Set([...prev, tourId]));
+        message.success("Đã thêm vào danh sách yêu thích");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật yêu thích:", error);
+      if (error.response?.status === 401) {
+        message.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+        setIsAuthenticated(false);
+        setFavoriteTours(new Set());
+      } else {
+        message.error("Có lỗi xảy ra, vui lòng thử lại");
+      }
+    } finally {
+      setLoadingFavorites((prev) => ({ ...prev, [tourId]: false }));
+    }
   };
 
   const fetchData = async () => {
@@ -85,7 +156,6 @@ function Tour() {
         buildTree(destinationsData.data)
       );
 
-
       setDepartures(departuresData.data || []);
       setDestinations(destinationChildrens || []);
       setTransportations(transportationsData.data || []);
@@ -94,11 +164,21 @@ function Tour() {
       message.error("Lỗi khi tải dữ liệu tour!");
     } finally {
       // setLoading(false);
-    } 
+    }
   };
 
   useEffect(() => {
+    // Kiểm tra trạng thái đăng nhập trước
+    const authStatus = checkAuthStatus();
+    setIsAuthenticated(authStatus);
+
     fetchData();
+
+    // Chỉ fetch favorites nếu đã đăng nhập
+    if (authStatus) {
+      fetchFavorites();
+    }
+
     const params = new URLSearchParams(location.search);
     const budgetId = params.get("budgetId");
     const categoryId = params.get("categoryId");
@@ -426,6 +506,48 @@ function Tour() {
                     <div className="card-category">
                       <span>{item.category}</span>
                     </div>
+                    {/* Icon trái tim yêu thích - chỉ hiển thị khi đã đăng nhập */}
+                    {isAuthenticated && (
+                      <div
+                        className="favorite-icon"
+                        onClick={(e) => handleToggleFavorite(item.id, e)}
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          zIndex: 10,
+                          cursor: "pointer",
+                          backgroundColor: "rgba(255, 255, 255, 0.8)",
+                          borderRadius: "50%",
+                          width: "36px",
+                          height: "36px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.3s ease",
+                          opacity: loadingFavorites[item.id] ? 0.5 : 1,
+                          pointerEvents: loadingFavorites[item.id]
+                            ? "none"
+                            : "auto",
+                        }}
+                      >
+                        {favoriteTours.has(item.id) ? (
+                          <HeartFilled
+                            style={{
+                              color: "#ff4757",
+                              fontSize: "18px",
+                            }}
+                          />
+                        ) : (
+                          <HeartOutlined
+                            style={{
+                              color: "#666",
+                              fontSize: "18px",
+                            }}
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="card-filter-desktop-content">
                     <div className="info">

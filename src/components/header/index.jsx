@@ -140,7 +140,7 @@ function Header() {
         const response = await get("destinations");
         const destinations = response.data;
 
-        // Lọc bỏ các destination inActive nếu cần
+        // Lọc bỏ các destination inActive
         const activeDestinations = destinations.filter(
           (item) => !item.inActive
         );
