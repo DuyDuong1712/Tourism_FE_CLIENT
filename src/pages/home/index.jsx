@@ -54,8 +54,8 @@ function Home() {
     const value = event.target.value;
     setFilterSearch((prev) => ({ ...prev, text: value }));
     if (value) {
-      const response = await get(`destination?title=${value}`);
-      setDestination(response || []);
+      const response = await get(`destinations/search?keyword=${value}`);
+      setDestination(response.data || []);
     } else {
       setDestination([]);
     }
@@ -258,7 +258,7 @@ function Home() {
                       <input
                         type="text"
                         placeholder="Tìm kiếm với bất kỳ địa điểm bạn yêu thích!"
-                        // value={filterSearch.destination}
+                        value={filterSearch.destination}
                         onChange={handleSearchInputChange}
                       />
                     </div>
@@ -268,10 +268,10 @@ function Home() {
                           <div
                             key={index}
                             className="destination-item"
-                            onClick={() => handleClickDestination(record.slug)}
+                            onClick={() => handleClickDestination(record.name)}
                           >
-                            <img src={record.image} alt={record.title} />
-                            <p>{record.title}</p>
+                            <img src={record.image} alt={record.description} />
+                            <p>{record.name}</p>
                           </div>
                         ))}
                       </div>

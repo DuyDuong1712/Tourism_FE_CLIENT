@@ -75,7 +75,6 @@ export const logout = async () => {
 
         // Xóa token khỏi localStorage
         localStorage.removeItem("accessToken");
-
         console.log('Đăng xuất thành công');
     } catch (error) {
         console.error('Lỗi khi đăng xuất', error);
